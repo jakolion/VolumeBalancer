@@ -57,7 +57,7 @@ namespace VolumeBalancer
                     }
                     else
                     {
-                        string applicationName = GetProcessPath(Process.GetProcessById((int)session.GetProcessID));
+                        string applicationName = GetProcessName(Process.GetProcessById((int)session.GetProcessID));
                         if (applicationName == "")
                             applicationName = Process.GetProcessById((int)session.GetProcessID).ProcessName;
 
@@ -157,25 +157,26 @@ namespace VolumeBalancer
         }
 
         // get path of process
-        public string GetProcessPath(Process process)
+        public string GetProcessName(Process process)
         {
+            // the following returns the path for the most processes:
+            // process.MainModule.FileName
+            // because some processes don't have a MainModule, we use WMI
             try
             {
-                return process.MainModule.FileName;
-            }
-            catch
-            {
-                string query = "SELECT ExecutablePath FROM Win32_Process WHERE ProcessId = " + process.Id;
+                // some processes don't have "ExecutablePath", so we ask for the name only
+                string query = "SELECT Name FROM Win32_Process WHERE ProcessId = " + process.Id;
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
                 foreach (ManagementObject item in searcher.Get())
                 {
-                    if (item["ExecutablePath"] != null)
+                    if (item["Name"] != null)
                     {
-                        string path = item["ExecutablePath"].ToString();
-                        return path;
+                        string name = item["Name"].ToString();
+                        return name;
                     }
                 }
             }
+            catch { }
             return "";
         }
 
