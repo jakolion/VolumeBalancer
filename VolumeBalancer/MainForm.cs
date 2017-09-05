@@ -27,7 +27,8 @@ namespace VolumeBalancer
             // get default audio endpoint
             MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
             _device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-            
+            _device.AudioSessionManager.OnSessionCreated += OnSessionCreated;
+
             // load the application list for the first time
             UpdateApplicationList();
         }
@@ -296,34 +297,49 @@ namespace VolumeBalancer
                     _guiUpdateByEventIsRunning = false;
                 }));
             }
-            catch
+            catch { }
+        }
+
+        public void OnSessionCreated(object sender, IAudioSessionControl newSession)
+        {
+            try
             {
+                // RefreshSessions must not run inside invoke!
+                _device.AudioSessionManager.RefreshSessions();
+                this.Invoke(new Action(delegate ()
+                {
+                    UpdateApplicationList();
+                }));
             }
-        }
-
-        public void OnDisplayNameChanged(string displayName)
-        {
-        }
-
-        public void OnIconPathChanged(string iconPath)
-        {
-        }
-
-        public void OnChannelVolumeChanged(uint channelCount, IntPtr newVolumes, uint channelIndex)
-        {
-        }
-
-        public void OnGroupingParamChanged(ref Guid groupingId)
-        {
+            catch { }
         }
 
         public void OnStateChanged(AudioSessionState state)
         {
+            try
+            {
+                // RefreshSessions must not run inside invoke!
+                _device.AudioSessionManager.RefreshSessions();
+                this.Invoke(new Action(delegate ()
+                {
+                    if (state == AudioSessionState.AudioSessionStateExpired)
+                    {
+                        UpdateApplicationList();
+                    }
+                }));
+            }
+            catch { }
         }
 
-        public void OnSessionDisconnected(AudioSessionDisconnectReason disconnectReason)
-        {
-        }
+        public void OnDisplayNameChanged(string displayName) { }
+
+        public void OnIconPathChanged(string iconPath) { }
+
+        public void OnChannelVolumeChanged(uint channelCount, IntPtr newVolumes, uint channelIndex) { }
+
+        public void OnGroupingParamChanged(ref Guid groupingId) { }
+
+        public void OnSessionDisconnected(AudioSessionDisconnectReason disconnectReason) { }
 
         #endregion
     }
