@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -57,11 +58,11 @@ namespace VolumeBalancer
                     }
                     else
                     {
-                        string applicationName = GetProcessName(Process.GetProcessById((int)session.GetProcessID));
-                        if (applicationName == "")
-                            applicationName = Process.GetProcessById((int)session.GetProcessID).ProcessName;
+                        string applicationPath = GetProcessPath(session.GetProcessID);
+                        if (applicationPath == "")
+                            applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
 
-                        _audioAppList.Add(new AudioApp(session, applicationName));
+                        _audioAppList.Add(new AudioApp(session, applicationPath));
                     }
                     session.RegisterEventClient(this);
                 }
@@ -156,7 +157,7 @@ namespace VolumeBalancer
             }
         }
 
-        // get path of process
+        // get name of process
         public string GetProcessName(Process process)
         {
             // the following returns the path for the most processes:
@@ -178,6 +179,30 @@ namespace VolumeBalancer
             }
             catch { }
             return "";
+        }
+
+        // get path of process
+        string GetProcessPath(uint processId)
+        {
+            const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+            IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+            if (hProcess != IntPtr.Zero)
+            {
+                try
+                {
+                    StringBuilder buffer = new StringBuilder(1024);
+                    uint size = (uint)buffer.Capacity;
+                    if (QueryFullProcessImageName(hProcess, 0, buffer, ref size))
+                    {
+                        return buffer.ToString();
+                    }
+                }
+                finally
+                {
+                    CloseHandle(hProcess);
+                }
+            }
+            return string.Empty;
         }
 
         // reset all sessions
@@ -341,6 +366,24 @@ namespace VolumeBalancer
         public void OnGroupingParamChanged(ref Guid groupingId) { }
 
         public void OnSessionDisconnected(AudioSessionDisconnectReason disconnectReason) { }
+
+        #endregion
+
+
+
+        #region imports
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, uint processId);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern bool QueryFullProcessImageName(IntPtr hProcess, uint dwFlags, [Out, MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpExeName, ref uint lpdwSize);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        //[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        //[SuppressUnmanagedCodeSecurity]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool CloseHandle(IntPtr hObject);
 
         #endregion
     }
