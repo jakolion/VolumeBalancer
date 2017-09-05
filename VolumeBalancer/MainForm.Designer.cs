@@ -95,14 +95,14 @@
             this.groupBoxBalance.Controls.Add(this.labelBalanceCenter);
             this.groupBoxBalance.Location = new System.Drawing.Point(13, 83);
             this.groupBoxBalance.Name = "groupBoxBalance";
-            this.groupBoxBalance.Size = new System.Drawing.Size(400, 112);
+            this.groupBoxBalance.Size = new System.Drawing.Size(400, 97);
             this.groupBoxBalance.TabIndex = 0;
             this.groupBoxBalance.TabStop = false;
             this.groupBoxBalance.Text = "Balance";
             // 
             // buttonReset
             // 
-            this.buttonReset.Location = new System.Drawing.Point(138, 72);
+            this.buttonReset.Location = new System.Drawing.Point(138, 63);
             this.buttonReset.Name = "buttonReset";
             this.buttonReset.Size = new System.Drawing.Size(125, 23);
             this.buttonReset.TabIndex = 4;
@@ -112,7 +112,7 @@
             // 
             // buttonIncreaseOther
             // 
-            this.buttonIncreaseOther.Location = new System.Drawing.Point(319, 72);
+            this.buttonIncreaseOther.Location = new System.Drawing.Point(319, 63);
             this.buttonIncreaseOther.Name = "buttonIncreaseOther";
             this.buttonIncreaseOther.Size = new System.Drawing.Size(75, 23);
             this.buttonIncreaseOther.TabIndex = 5;
@@ -122,7 +122,7 @@
             // 
             // buttonIncreaseChat
             // 
-            this.buttonIncreaseChat.Location = new System.Drawing.Point(9, 72);
+            this.buttonIncreaseChat.Location = new System.Drawing.Point(9, 63);
             this.buttonIncreaseChat.Name = "buttonIncreaseChat";
             this.buttonIncreaseChat.Size = new System.Drawing.Size(75, 23);
             this.buttonIncreaseChat.TabIndex = 3;
@@ -163,11 +163,14 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(426, 206);
+            this.ClientSize = new System.Drawing.Size(426, 191);
             this.Controls.Add(this.groupBoxBalance);
             this.Controls.Add(this.groupBoxSettings);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VolumeBalancer";
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBalance)).EndInit();
             this.groupBoxBalance.ResumeLayout(false);
