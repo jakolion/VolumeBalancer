@@ -172,6 +172,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VolumeBalancer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBalance)).EndInit();
             this.groupBoxBalance.ResumeLayout(false);
             this.groupBoxBalance.PerformLayout();

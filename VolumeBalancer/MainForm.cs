@@ -32,6 +32,8 @@ namespace VolumeBalancer
 
             // load the application list for the first time
             UpdateApplicationList();
+
+            Show();
         }
 
         private void UpdateApplicationList()
@@ -222,6 +224,12 @@ namespace VolumeBalancer
 
 
         #region GUI events
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Hide();
+            e.Cancel = true;
+        }
 
         private void buttonReset_Click(object sender, EventArgs e)
         {
