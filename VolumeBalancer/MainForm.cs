@@ -62,10 +62,12 @@ namespace VolumeBalancer
                     }
                     else
                     {
+                        // get full path of process if possible
                         string applicationPath = GetProcessPath(session.GetProcessID);
                         if (applicationPath == "")
                             applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
                         
+                        // add new audio app to list if not already existing
                         if (_audioAppList.FirstOrDefault(x => x.ToString() == applicationPath) == null)
                             _audioAppList.Add(new AudioApp(session, applicationPath));
                     }
@@ -205,6 +207,7 @@ namespace VolumeBalancer
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // hide window instead of closing it
             Hide();
             e.Cancel = true;
         }
@@ -231,6 +234,7 @@ namespace VolumeBalancer
 
         private void trackBarBalance_ValueChanged(object sender, EventArgs e)
         {
+            // check if an event is updating the UI
             if (!_guiUpdateByEventIsRunning)
             {
                 // get highest volume of chat application and other application
