@@ -52,7 +52,9 @@ namespace VolumeBalancer
             for (int i = 0; i < sessions.Count; i++)
             {
                 AudioSessionControl session = sessions[i];
-                if (ProcessExists(session.GetProcessID)) // is this necessary?
+                // check if process exists because this function gets also called
+                // for recently stopped processes
+                if (ProcessExists(session.GetProcessID))
                 {
                     if (session.IsSystemSoundsSession)
                     {
@@ -145,7 +147,6 @@ namespace VolumeBalancer
         }
 
         // checks if a process is running
-        // (is this check necessary?)
         bool ProcessExists(uint processId)
         {
             try
