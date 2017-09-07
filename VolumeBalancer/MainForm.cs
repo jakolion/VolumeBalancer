@@ -160,30 +160,6 @@ namespace VolumeBalancer
             }
         }
 
-        // get name of process
-        public string GetProcessName(Process process)
-        {
-            // the following returns the path for the most processes:
-            // process.MainModule.FileName
-            // because some processes don't have a MainModule, we use WMI
-            try
-            {
-                // some processes don't have "ExecutablePath", so we ask for the name only
-                string query = "SELECT Name FROM Win32_Process WHERE ProcessId = " + process.Id;
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-                foreach (ManagementObject item in searcher.Get())
-                {
-                    if (item["Name"] != null)
-                    {
-                        string name = item["Name"].ToString();
-                        return name;
-                    }
-                }
-            }
-            catch { }
-            return "";
-        }
-
         // get path of process
         string GetProcessPath(uint processId)
         {
