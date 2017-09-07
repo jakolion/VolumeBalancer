@@ -65,8 +65,9 @@ namespace VolumeBalancer
                         string applicationPath = GetProcessPath(session.GetProcessID);
                         if (applicationPath == "")
                             applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
-
-                        _audioAppList.Add(new AudioApp(session, applicationPath));
+                        
+                        if (_audioAppList.FirstOrDefault(x => x.ToString() == applicationPath) == null)
+                            _audioAppList.Add(new AudioApp(session, applicationPath));
                     }
                     session.RegisterEventClient(this);
                 }
