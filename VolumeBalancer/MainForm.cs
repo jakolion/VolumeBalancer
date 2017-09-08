@@ -54,7 +54,7 @@ namespace VolumeBalancer
                 AudioSessionControl session = sessions[i];
                 // check if process exists because this function gets also called
                 // for recently stopped processes
-                if (ProcessExists(session.GetProcessID))
+                if (session.State != AudioSessionState.AudioSessionStateExpired && ProcessExists(session.GetProcessID))
                 {
                     if (session.IsSystemSoundsSession)
                     {
