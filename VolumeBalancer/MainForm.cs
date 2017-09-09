@@ -99,13 +99,11 @@ namespace VolumeBalancer
             if (!comboAudioApplications.DroppedDown)
             {
                 comboAudioApplications.Items.Clear();
-                //comboAudioApplications.Items.Add("Select a running audio application");
                 comboAudioApplications.Sorted = true;
                 comboAudioApplications.Items.AddRange(_audioAppList.ToArray());
                 comboAudioApplications.Sorted = false;
                 comboAudioApplications.Items.Insert(0, "Select a running audio application");
-                if (comboAudioApplications.Items.Count > 0)
-                    comboAudioApplications.SelectedIndex = 0;
+                comboAudioApplications.SelectedIndex = 0;
             }
 
             // update GUI
@@ -349,6 +347,7 @@ namespace VolumeBalancer
                 string newChatApplication = comboAudioApplications.SelectedItem.ToString();
                 textBoxChatApplication.Text = newChatApplication;
                 UserSettings.setChatApplication(newChatApplication);
+                comboAudioApplications.SelectedIndex = 0;
                 ResetBalance();
             }
         }
@@ -461,7 +460,7 @@ namespace VolumeBalancer
         #endregion
 
 
-        #region events
+        #region external events
 
         public void OnVolumeChanged(float volume, bool isMuted)
         {
