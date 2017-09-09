@@ -31,11 +31,24 @@ namespace VolumeBalancer
             textBoxChatApplication.Text = UserSettings.getChatApplication();
             trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
 
+            // we need to call "Show()" so that the
+            // _updateApplicationListThread is able to access the controls
+            // therefore we need to start invisible
+            Opacity = 0;
+            ShowInTaskbar = false;
+            Show();
+            Hide();
+            Opacity = 100;
+            ShowInTaskbar = true;
+
             // start thread for polling audio applications
             _updateApplicationListThread = new Thread(UpdateApplicationListJob);
             _updateApplicationListThread.Start();
 
-            Show();
+            // if the chat application is not stored in the user settings
+            // we show the GUI
+            if (UserSettings.getChatApplication() == "")
+                Show();
         }
 
 
