@@ -6,7 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Management;
@@ -17,33 +17,39 @@ namespace VolumeBalancer
 {
     public partial class MainForm : Form, IAudioSessionEventsHandler
     {
-        private MMDevice _device;
         private List<AudioApp> _audioAppList = new List<AudioApp>();
         private bool _guiUpdateByEventIsRunning = false;
+        public Thread _updateApplicationListThread;
+
 
         public MainForm()
         {
             InitializeComponent();
 
-            // get default audio endpoint
-            MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
-            _device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-            _device.AudioSessionManager.OnSessionCreated += OnSessionCreated;
+            // read user settings
+            UserSettings.readSettings();
+            textBoxChatApplication.Text = UserSettings.getChatApplication();
+            trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
 
-            // load the application list for the first time
-            UpdateApplicationList();
+            // start thread for polling audio applications
+            _updateApplicationListThread = new Thread(UpdateApplicationListJob);
+            _updateApplicationListThread.Start();
 
             Show();
         }
 
+
+        // update the application list
         private void UpdateApplicationList()
         {
-            // clear the list and combo box
+            // clear the list
             _audioAppList.Clear();
-            comboChatApplication.Items.Clear();
+            //_audioAppList.TrimExcess();
 
             // get current sessions
-            SessionCollection sessions = _device.AudioSessionManager.Sessions;
+            MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
+            MMDevice device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+            SessionCollection sessions = device.AudioSessionManager.Sessions;
 
             // return if no sessions are available
             if (sessions == null) return;
@@ -52,8 +58,7 @@ namespace VolumeBalancer
             for (int i = 0; i < sessions.Count; i++)
             {
                 AudioSessionControl session = sessions[i];
-                // check if process exists because this function gets also called
-                // for recently stopped processes
+                // check if session is not expired and process exists
                 if (session.State != AudioSessionState.AudioSessionStateExpired && ProcessExists(session.GetProcessID))
                 {
                     if (session.IsSystemSoundsSession)
@@ -66,34 +71,56 @@ namespace VolumeBalancer
                         string applicationPath = GetProcessPath(session.GetProcessID);
                         if (applicationPath == "")
                             applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
-                        
+
                         // add new audio app to list if not already existing
-                        if (_audioAppList.FirstOrDefault(x => x.ToString() == applicationPath) == null)
+                        if (!audioApplicationIsRunning(applicationPath))
                             _audioAppList.Add(new AudioApp(session, applicationPath));
                     }
                     session.RegisterEventClient(this);
                 }
             }
 
+
             // put the applications to the combo box and select the first item
-            comboChatApplication.Items.AddRange(_audioAppList.ToArray());
-            if (comboChatApplication.Items.Count > 0)
-                comboChatApplication.SelectedIndex = 0;
+            // prevent the update if the combo box is dropped down
+            if (!comboAudioApplications.DroppedDown)
+            {
+                comboAudioApplications.Items.Clear();
+                //comboAudioApplications.Items.Add("Select a running audio application");
+                comboAudioApplications.Sorted = true;
+                comboAudioApplications.Items.AddRange(_audioAppList.ToArray());
+                comboAudioApplications.Sorted = false;
+                comboAudioApplications.Items.Insert(0, "Select a running audio application");
+                if (comboAudioApplications.Items.Count > 0)
+                    comboAudioApplications.SelectedIndex = 0;
+            }
+
+            // update GUI
+            UpdateGui();
         }
+
+
+        // returns true if the application path can be found
+        // in the current audio application list
+        bool audioApplicationIsRunning(string applicationPath)
+        {
+            return _audioAppList.FirstOrDefault(x => x.ToString() == applicationPath) != null;
+        }
+
 
         // get application volumes
         // sets loudest application to 1
         void GetApplicationVolumes(out float chatApplicationVolume, out float highestOtherApplicationVolume)
         {
-            // get highest volume of chat application and other application
             chatApplicationVolume = 0;
             highestOtherApplicationVolume = 0;
-            AudioApp selectedChatApplication = (AudioApp)comboChatApplication.SelectedItem;
+
+            // get highest volume of chat application and other application
             for (int i = 0; i < _audioAppList.Count; i++)
             {
                 AudioApp app = _audioAppList[i];
-                AudioSessionControl session = app._session;
-                if (app._name == selectedChatApplication._name)
+                AudioSessionControl session = app.session;
+                if (app.path == UserSettings.getChatApplication())
                 {
                     chatApplicationVolume = session.SimpleAudioVolume.Volume;
                 }
@@ -103,6 +130,12 @@ namespace VolumeBalancer
                         highestOtherApplicationVolume = session.SimpleAudioVolume.Volume;
                 }
             }
+
+            // return if chat application isn't running
+            if (!audioApplicationIsRunning(UserSettings.getChatApplication())) return;
+
+            // return if only the audio application is running
+            if (audioApplicationIsRunning(UserSettings.getChatApplication()) && _audioAppList.Count == 1) return;
 
             // set the loudest application (also chat) to 1
             if (chatApplicationVolume < 1 && highestOtherApplicationVolume < 1)
@@ -116,15 +149,17 @@ namespace VolumeBalancer
                 {
                     multiplier = 1 + (100 / highestOtherApplicationVolume * (1 - highestOtherApplicationVolume) / 100);
                 }
+
                 for (int i = 0; i < _audioAppList.Count; i++)
                 {
                     AudioApp app = _audioAppList[i];
-                    AudioSessionControl session = app._session;
+                    AudioSessionControl session = app.session;
                     session.SimpleAudioVolume.Volume *= multiplier;
                 }
 
             }
         }
+
 
         // updates the gui
         void UpdateGui()
@@ -134,20 +169,56 @@ namespace VolumeBalancer
             float highestOtherApplicationVolume = 0;
             GetApplicationVolumes(out chatApplicationVolume, out highestOtherApplicationVolume);
 
-            // calc position of the slider
-            if (chatApplicationVolume > highestOtherApplicationVolume)
+            // check if chat application is running
+            if (audioApplicationIsRunning(UserSettings.getChatApplication()))
             {
-                trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
-            }
-            else if (highestOtherApplicationVolume > chatApplicationVolume)
-            {
-                trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * chatApplicationVolume);
+                // check if only the chat aplication is running
+                if (_audioAppList.Count == 1)
+                {
+                    // chat application is the only audio application running
+                    // so the slider can only be moved to the right side
+                    trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * chatApplicationVolume);
+
+                    // disable label chat
+                    labelChat.Enabled = false;
+                }
+                else
+                {
+                    // calc position of the slider
+                    if (chatApplicationVolume > highestOtherApplicationVolume)
+                    {
+                        trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
+                    }
+                    else if (highestOtherApplicationVolume > chatApplicationVolume)
+                    {
+                        trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * chatApplicationVolume);
+                    }
+                    else
+                    {
+                        trackBarBalance.Value = trackBarBalance.Maximum / 2;
+                    }
+
+                    // enable label chat
+                    labelChat.Enabled = true;
+                }
+
+                // enable label other
+                labelOther.Enabled = true;
             }
             else
             {
-                trackBarBalance.Value = trackBarBalance.Maximum / 2;
+                // chat application is not running
+                // so the slider can only be moved to the left side
+                trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
+
+                // disable label other
+                labelOther.Enabled = false;
+
+                // enable label chat
+                labelChat.Enabled = true;
             }
         }
+
 
         // checks if a process is running
         bool ProcessExists(uint processId)
@@ -162,6 +233,7 @@ namespace VolumeBalancer
                 return false;
             }
         }
+
 
         // get path of process
         string GetProcessPath(uint processId)
@@ -187,8 +259,9 @@ namespace VolumeBalancer
             return string.Empty;
         }
 
-        // reset all sessions
-        void ResetAllSessions()
+
+        // reset balance
+        void ResetBalance()
         {
             // store old track bar value
             int oldValue = trackBarBalance.Value;
@@ -202,8 +275,28 @@ namespace VolumeBalancer
         }
 
 
+        // poll for new audio applications
+        // because events are not working on every pc
+        void UpdateApplicationListJob()
+        {
+            while (true)
+            {
+                try
+                {
+                    this.BeginInvoke(new Action(delegate ()
+                    {
+                        UpdateApplicationList();
+                    }));
+                }
+                catch { }
+                GC.Collect();
+                System.Threading.Thread.Sleep(2000);
+            }
+        }
+
 
         #region GUI events
+
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -212,28 +305,39 @@ namespace VolumeBalancer
             e.Cancel = true;
         }
 
-        private void buttonReset_Click(object sender, EventArgs e)
+
+        private void comboAudioApplications_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // reset
-            ResetAllSessions();
+            if (comboAudioApplications.SelectedIndex > 0)
+            {
+                string newChatApplication = comboAudioApplications.SelectedItem.ToString();
+                textBoxChatApplication.Text = newChatApplication;
+                UserSettings.setChatApplication(newChatApplication);
+                ResetBalance();
+            }
         }
 
-        private void buttonIncreaseOther_Click(object sender, EventArgs e)
+
+        private void buttonBrowse_Click(object sender, EventArgs e)
         {
-            // move slider to the right (to other aplications)
-            if (trackBarBalance.Value < trackBarBalance.Maximum)
-                trackBarBalance.Value++;
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Applications (*.exe)|*.exe";
+            ofd.FilterIndex = 1;
+            ofd.Multiselect = false;
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                textBoxChatApplication.Text = ofd.FileName;
+                UserSettings.setChatApplication(ofd.FileName);
+                ResetBalance();
+            }
         }
 
-        private void buttonIncreaseChat_Click(object sender, EventArgs e)
-        {
-            // move slider to the left (to chat aplication)
-            if (trackBarBalance.Value > trackBarBalance.Minimum)
-                trackBarBalance.Value--;
-        }
 
         private void trackBarBalance_ValueChanged(object sender, EventArgs e)
         {
+            // skip if chat application name isn't set
+            if (UserSettings.getChatApplication() == "") return;
+
             // check if an event is updating the UI
             if (!_guiUpdateByEventIsRunning)
             {
@@ -241,7 +345,7 @@ namespace VolumeBalancer
                 float chatApplicationVolume = 0;
                 float highestOtherApplicationVolume = 0;
                 GetApplicationVolumes(out chatApplicationVolume, out highestOtherApplicationVolume);
-                
+
                 int center = trackBarBalance.Maximum / 2;
                 float newChatApplicationVolume = 0;
                 float newHighestOtherApplicationVolume = 0;
@@ -253,7 +357,7 @@ namespace VolumeBalancer
                     newChatApplicationVolume = 1;
                     newHighestOtherApplicationVolume = (1f / center * trackBarBalance.Value);
                 }
-                else if (trackBarBalance.Value > center)
+                else if (trackBarBalance.Value > center && audioApplicationIsRunning(UserSettings.getChatApplication()))
                 {
                     // slider is on other application side
                     newChatApplicationVolume = (1f / center * (trackBarBalance.Maximum - trackBarBalance.Value));
@@ -270,34 +374,55 @@ namespace VolumeBalancer
                 float multiplier = 100 / highestOtherApplicationVolume * newHighestOtherApplicationVolume / 100;
 
                 // loop through audio applications and set session volume
-                AudioApp selectedChatApplication = (AudioApp)comboChatApplication.SelectedItem;
                 for (int i = 0; i < _audioAppList.Count; i++)
                 {
                     AudioApp app = _audioAppList[i];
-                    if (app._name == selectedChatApplication._name)
+                    if (app.path == UserSettings.getChatApplication())
                     {
-                        app._session.SimpleAudioVolume.Volume = newChatApplicationVolume;
+                        app.session.SimpleAudioVolume.Volume = newChatApplicationVolume;
                     }
                     else
                     {
                         // if highestOtherApplicationVolume is 0, multiplier is infinity
                         if (highestOtherApplicationVolume == 0)
-                            app._session.SimpleAudioVolume.Volume = newHighestOtherApplicationVolume;
+                            app.session.SimpleAudioVolume.Volume = newHighestOtherApplicationVolume;
                         else
-                            app._session.SimpleAudioVolume.Volume *= multiplier;
+                            app.session.SimpleAudioVolume.Volume *= multiplier;
                     }
 
                 }
             }
+
+            // save new position of balance in user settings
+            uint balancePosition = (uint)(100f / trackBarBalance.Maximum * trackBarBalance.Value);
+            UserSettings.setBalancePosition(balancePosition);
         }
 
-        private void comboChatApplication_SelectedIndexChanged(object sender, EventArgs e)
+
+        private void buttonReset_Click(object sender, EventArgs e)
         {
-            ResetAllSessions();
+            // reset balance
+            ResetBalance();
         }
+
+
+        private void buttonIncreaseOther_Click(object sender, EventArgs e)
+        {
+            // move slider to the right (to other aplications)
+            if (trackBarBalance.Value < trackBarBalance.Maximum)
+                trackBarBalance.Value++;
+        }
+
+
+        private void buttonIncreaseChat_Click(object sender, EventArgs e)
+        {
+            // move slider to the left (to chat aplication)
+            if (trackBarBalance.Value > trackBarBalance.Minimum)
+                trackBarBalance.Value--;
+        }
+
 
         #endregion
-
 
 
         #region events
@@ -306,7 +431,7 @@ namespace VolumeBalancer
         {
             try
             {
-                this.Invoke(new Action(delegate ()
+                this.BeginInvoke(new Action(delegate ()
                 {
                     _guiUpdateByEventIsRunning = true;
                     UpdateGui();
@@ -314,38 +439,10 @@ namespace VolumeBalancer
                 }));
             }
             catch { }
+            GC.Collect();
         }
 
-        public void OnSessionCreated(object sender, IAudioSessionControl newSession)
-        {
-            try
-            {
-                // RefreshSessions must not run inside invoke!
-                _device.AudioSessionManager.RefreshSessions();
-                this.Invoke(new Action(delegate ()
-                {
-                    UpdateApplicationList();
-                }));
-            }
-            catch { }
-        }
-
-        public void OnStateChanged(AudioSessionState state)
-        {
-            try
-            {
-                // RefreshSessions must not run inside invoke!
-                _device.AudioSessionManager.RefreshSessions();
-                this.Invoke(new Action(delegate ()
-                {
-                    if (state == AudioSessionState.AudioSessionStateExpired)
-                    {
-                        UpdateApplicationList();
-                    }
-                }));
-            }
-            catch { }
-        }
+        public void OnStateChanged(AudioSessionState state) { }
 
         public void OnDisplayNameChanged(string displayName) { }
 
@@ -358,7 +455,6 @@ namespace VolumeBalancer
         public void OnSessionDisconnected(AudioSessionDisconnectReason disconnectReason) { }
 
         #endregion
-
 
 
         #region imports
@@ -376,23 +472,68 @@ namespace VolumeBalancer
         static extern bool CloseHandle(IntPtr hObject);
 
         #endregion
-    }
 
-    // class for storing a session and it's readable name
-    public class AudioApp
-    {
-        public AudioSessionControl _session { get; }
-        public string _name { get; }
 
-        public AudioApp(AudioSessionControl session, string name)
+        // class for storing a session and it's readable name
+        private class AudioApp
         {
-            _session = session;
-            _name = name;
+            public AudioSessionControl session { get; }
+            public string path { get; }
+
+            public AudioApp(AudioSessionControl session, string path)
+            {
+                this.session = session;
+                this.path = path;
+            }
+
+            public override string ToString()
+            {
+                return path;
+            }
         }
 
-        public override string ToString()
+
+        // class for storing user settings
+        private static class UserSettings
         {
-            return _name;
+            private static string _chatApplication;
+            private static uint _balancePosition;
+
+            public static string getChatApplication()
+            {
+                return _chatApplication;
+            }
+
+            public static void setChatApplication(string chatApplication)
+            {
+                _chatApplication = chatApplication;
+                saveSettings();
+            }
+
+            public static uint getBalancePosition()
+            {
+                return _balancePosition;
+            }
+
+            public static void setBalancePosition(uint balancePosition)
+            {
+                _balancePosition = balancePosition;
+                saveSettings();
+            }
+
+            public static void readSettings()
+            {
+                _chatApplication = Properties.Settings.Default.chatApplication;
+                _balancePosition = Properties.Settings.Default.balancePosition;
+            }
+
+            private static void saveSettings()
+            {
+                Properties.Settings.Default.chatApplication = _chatApplication;
+                Properties.Settings.Default.balancePosition = _balancePosition;
+                Properties.Settings.Default.Save();
+            }
         }
     }
+
 }

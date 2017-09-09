@@ -72,7 +72,8 @@ namespace VolumeBalancer
 
         private void OnExit(object sender, EventArgs e)
         {
-            // dispose the TrayApp and exit
+            // exit
+            _updateApplicationListThread.Abort();
             Dispose(true);
             Application.Exit();
         }
