@@ -204,18 +204,41 @@ namespace VolumeBalancer
 
                 // enable label other
                 labelOther.Enabled = true;
+
+                // enable balance group
+                groupBoxBalance.Enabled = true;
             }
             else
             {
-                // chat application is not running
-                // so the slider can only be moved to the left side
-                trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
+                // check if a chat application is set and not empty
+                if (UserSettings.getChatApplication() == "")
+                {
+                    // disable label other
+                    labelOther.Enabled = false;
 
-                // disable label other
-                labelOther.Enabled = false;
+                    // disable label chat
+                    labelChat.Enabled = false;
 
-                // enable label chat
-                labelChat.Enabled = true;
+                    // disable balance group and move slider to the center
+                    groupBoxBalance.Enabled = false;
+                    trackBarBalance.Value = trackBarBalance.Maximum / 2;
+                }
+                else
+                {
+                    // chat application is not running
+
+                    // disable label other
+                    labelOther.Enabled = false;
+
+                    // enable label chat
+                    labelChat.Enabled = true;
+
+                    // enable balance group
+                    groupBoxBalance.Enabled = true;
+
+                    // so the slider can only be moved to the left side
+                    trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
+                }
             }
         }
 
