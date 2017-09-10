@@ -21,6 +21,14 @@ namespace VolumeBalancer
         private bool _guiUpdateByEventIsRunning = false;
         public Thread _updateApplicationListThread;
 
+        public enum Hotkeys
+        {
+            INCREASE_CHAT,
+            INCREASE_OTHER_APPS,
+            RESET_BALANCE,
+            RESET_ALL_APP_VOLUME
+        }
+
 
         public MainForm()
         {
@@ -40,6 +48,12 @@ namespace VolumeBalancer
             Hide();
             Opacity = 100;
             ShowInTaskbar = true;
+
+            // Define hotkeys
+            RegisterHotKey(this.Handle, (int)Hotkeys.INCREASE_CHAT, MOD_CONTROL, (int)Keys.PageUp);
+            RegisterHotKey(this.Handle, (int)Hotkeys.INCREASE_OTHER_APPS, MOD_CONTROL, (int)Keys.PageDown);
+            RegisterHotKey(this.Handle, (int)Hotkeys.RESET_BALANCE, MOD_CONTROL, (int)Keys.Home);
+            RegisterHotKey(this.Handle, (int)Hotkeys.RESET_ALL_APP_VOLUME, MOD_CONTROL, (int)Keys.End);
 
             // start thread for polling audio applications
             _updateApplicationListThread = new Thread(UpdateApplicationListJob);
@@ -310,6 +324,36 @@ namespace VolumeBalancer
         }
 
 
+        // increase chat volume
+        void IncreaseChatVolume()
+        {
+            // move slider to the left (to chat aplication)
+            if (trackBarBalance.Value > trackBarBalance.Minimum)
+                trackBarBalance.Value--;
+        }
+
+
+        // increase other apps volume
+        void IncreaseOtherAppsVolume()
+        {
+            // move slider to the right (to other aplications)
+            if (trackBarBalance.Value < trackBarBalance.Maximum)
+                trackBarBalance.Value++;
+        }
+
+
+        // reset all audio application volumes
+        void ResetAllAudioApplicationVolume()
+        {
+            // loop through audio applications and set session volume
+            for (int i = 0; i < _audioAppList.Count; i++)
+            {
+                AudioApp app = _audioAppList[i];
+                app.session.SimpleAudioVolume.Volume = 1;
+            }
+        }
+
+
         // poll for new audio applications
         // because events are not working on every pc
         void UpdateApplicationListJob()
@@ -425,13 +469,19 @@ namespace VolumeBalancer
                         else
                             app.session.SimpleAudioVolume.Volume *= multiplier;
                     }
-
                 }
             }
 
             // save new position of balance in user settings
             uint balancePosition = (uint)(100f / trackBarBalance.Maximum * trackBarBalance.Value);
             UserSettings.setBalancePosition(balancePosition);
+        }
+
+
+        private void buttonIncreaseChat_Click(object sender, EventArgs e)
+        {
+            // increase chat volume
+            IncreaseChatVolume();
         }
 
 
@@ -444,17 +494,47 @@ namespace VolumeBalancer
 
         private void buttonIncreaseOther_Click(object sender, EventArgs e)
         {
-            // move slider to the right (to other aplications)
-            if (trackBarBalance.Value < trackBarBalance.Maximum)
-                trackBarBalance.Value++;
+            // increase other apps volume
+            IncreaseOtherAppsVolume();
         }
 
 
-        private void buttonIncreaseChat_Click(object sender, EventArgs e)
+        private void textBoxShortcutIncreaseChatVolume_KeyDown(object sender, KeyEventArgs e)
         {
-            // move slider to the left (to chat aplication)
-            if (trackBarBalance.Value > trackBarBalance.Minimum)
-                trackBarBalance.Value--;
+
+            TextBox tb = (TextBox)sender;
+            if (e.KeyCode != Keys.Back)
+            {
+                // get modifier keys
+                Keys modifierKeys = e.Modifiers;
+
+                // remove modifier keys
+                Keys pressedKey = e.KeyData ^ modifierKeys;
+
+                if (
+                    modifierKeys != Keys.None &&
+                    pressedKey != Keys.None &&
+                    pressedKey != Keys.Menu &&
+                    pressedKey != Keys.ShiftKey &&
+                    pressedKey != Keys.ControlKey)
+                {
+                    // convert the key data for the text box
+                    var converter = new KeysConverter();
+                    tb.Text = converter.ConvertToString(e.KeyData);
+
+                    // At this point, we know a one or more modifiers and another key were pressed
+                    // modifierKeys contains the modifiers
+                    // pressedKey contains the other pressed key
+                    // Do stuff with results here
+                }
+            }
+            else
+            {
+                tb.Text = "";
+            }
+
+            e.Handled = true;
+            e.SuppressKeyPress = true;
         }
 
 
@@ -490,6 +570,23 @@ namespace VolumeBalancer
 
         public void OnSessionDisconnected(AudioSessionDisconnectReason disconnectReason) { }
 
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_HOTKEY && (int)m.WParam == (int)Hotkeys.INCREASE_CHAT)
+                IncreaseChatVolume();
+
+            else if (m.Msg == WM_HOTKEY && (int)m.WParam == (int)Hotkeys.INCREASE_OTHER_APPS)
+                IncreaseOtherAppsVolume();
+
+            else if (m.Msg == WM_HOTKEY && (int)m.WParam == (int)Hotkeys.RESET_BALANCE)
+                ResetBalance();
+
+            else if (m.Msg == WM_HOTKEY && (int)m.WParam == (int)Hotkeys.RESET_ALL_APP_VOLUME)
+                ResetAllAudioApplicationVolume();
+
+            base.WndProc(ref m);
+        }
+
         #endregion
 
 
@@ -507,69 +604,19 @@ namespace VolumeBalancer
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("user32.dll")]
+        private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+        const int MOD_ALT = 0x0001;
+        const int MOD_CONTROL = 0x0002;
+        const int MOD_SHIFT = 0x0004;
+        const int MOD_WIN = 0x0008;
+        const int WM_HOTKEY = 0x0312;
+
         #endregion
-
-
-        // class for storing a session and it's readable name
-        private class AudioApp
-        {
-            public AudioSessionControl session { get; }
-            public string path { get; }
-
-            public AudioApp(AudioSessionControl session, string path)
-            {
-                this.session = session;
-                this.path = path;
-            }
-
-            public override string ToString()
-            {
-                return path;
-            }
-        }
-
-
-        // class for storing user settings
-        private static class UserSettings
-        {
-            private static string _chatApplication;
-            private static uint _balancePosition;
-
-            public static string getChatApplication()
-            {
-                return _chatApplication;
-            }
-
-            public static void setChatApplication(string chatApplication)
-            {
-                _chatApplication = chatApplication;
-                saveSettings();
-            }
-
-            public static uint getBalancePosition()
-            {
-                return _balancePosition;
-            }
-
-            public static void setBalancePosition(uint balancePosition)
-            {
-                _balancePosition = balancePosition;
-                saveSettings();
-            }
-
-            public static void readSettings()
-            {
-                _chatApplication = Properties.Settings.Default.chatApplication;
-                _balancePosition = Properties.Settings.Default.balancePosition;
-            }
-
-            private static void saveSettings()
-            {
-                Properties.Settings.Default.chatApplication = _chatApplication;
-                Properties.Settings.Default.balancePosition = _balancePosition;
-                Properties.Settings.Default.Save();
-            }
-        }
     }
 
 }
