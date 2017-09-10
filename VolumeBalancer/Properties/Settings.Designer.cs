@@ -46,5 +46,17 @@ namespace VolumeBalancer.Properties {
                 this["balancePosition"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string hotkeyIncreaseChatVolume {
+            get {
+                return ((string)(this["hotkeyIncreaseChatVolume"]));
+            }
+            set {
+                this["hotkeyIncreaseChatVolume"] = value;
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 
 namespace VolumeBalancer
 {
+    [Serializable]
     class Hotkey
     {
         private Keys modifierKeys;
@@ -16,6 +17,16 @@ namespace VolumeBalancer
         {
             this.modifierKeys = modifierKeys;
             this.pressedKey = pressedKey;
+        }
+
+        public Keys getModifierKeys()
+        {
+            return modifierKeys;
+        }
+
+        public Keys getPressedKey()
+        {
+            return pressedKey;
         }
     }
 }
