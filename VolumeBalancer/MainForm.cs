@@ -206,7 +206,7 @@ namespace VolumeBalancer
                     trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * chatApplicationVolume);
 
                     // disable label chat
-                    labelChat.Enabled = false;
+                    labelBalanceChatApplication.Enabled = false;
                 }
                 else
                 {
@@ -225,11 +225,11 @@ namespace VolumeBalancer
                     }
 
                     // enable label chat
-                    labelChat.Enabled = true;
+                    labelBalanceChatApplication.Enabled = true;
                 }
 
                 // enable label other
-                labelOther.Enabled = true;
+                labelBalanceOtherApplications.Enabled = true;
 
                 // enable balance group
                 groupBoxBalance.Enabled = true;
@@ -240,10 +240,10 @@ namespace VolumeBalancer
                 if (UserSettings.getChatApplication() == "")
                 {
                     // disable label other
-                    labelOther.Enabled = false;
+                    labelBalanceOtherApplications.Enabled = false;
 
                     // disable label chat
-                    labelChat.Enabled = false;
+                    labelBalanceChatApplication.Enabled = false;
 
                     // disable balance group and move slider to the center
                     groupBoxBalance.Enabled = false;
@@ -254,10 +254,10 @@ namespace VolumeBalancer
                     // chat application is not running
 
                     // disable label other
-                    labelOther.Enabled = false;
+                    labelBalanceOtherApplications.Enabled = false;
 
                     // enable label chat
-                    labelChat.Enabled = true;
+                    labelBalanceChatApplication.Enabled = true;
 
                     // enable balance group
                     groupBoxBalance.Enabled = true;
