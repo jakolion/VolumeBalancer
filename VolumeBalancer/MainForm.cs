@@ -121,7 +121,7 @@ namespace VolumeBalancer
             }
 
             // update GUI
-            UpdateGui();
+            UpdateBalanceSlider();
         }
 
 
@@ -187,8 +187,8 @@ namespace VolumeBalancer
         }
 
 
-        // updates the gui
-        void UpdateGui()
+        // updates the balance slider
+        void UpdateBalanceSlider()
         {
             // get highest volume of chat application and other application
             float chatApplicationVolume = 0;
@@ -551,7 +551,7 @@ namespace VolumeBalancer
                 this.BeginInvoke(new Action(delegate ()
                 {
                     _guiUpdateByEventIsRunning = true;
-                    UpdateGui();
+                    UpdateBalanceSlider();
                     _guiUpdateByEventIsRunning = false;
                 }));
             }
