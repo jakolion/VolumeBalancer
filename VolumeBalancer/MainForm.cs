@@ -115,6 +115,7 @@ namespace VolumeBalancer
         // in the current audio application list
         bool audioApplicationIsRunning(string applicationPath)
         {
+            if (applicationPath == "") return false;
             return _audioAppList.FirstOrDefault(x => x.ToString() == applicationPath) != null;
         }
 
