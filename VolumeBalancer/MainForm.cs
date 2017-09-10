@@ -427,20 +427,21 @@ namespace VolumeBalancer
                 GetApplicationVolumes(out chatApplicationVolume, out highestOtherApplicationVolume);
 
                 int center = trackBarBalance.Maximum / 2;
+                int value = trackBarBalance.Value;
                 float newChatApplicationVolume = 0;
                 float newHighestOtherApplicationVolume = 0;
 
                 // check position of slider
-                if (trackBarBalance.Value < center)
+                if (value < center)
                 {
                     // slider is on chat application side
                     newChatApplicationVolume = 1;
-                    newHighestOtherApplicationVolume = (1f / center * trackBarBalance.Value);
+                    newHighestOtherApplicationVolume = (1f / center * value);
                 }
-                else if (trackBarBalance.Value > center && audioApplicationIsRunning(UserSettings.getChatApplication()))
+                else if (value > center && audioApplicationIsRunning(UserSettings.getChatApplication()))
                 {
                     // slider is on other application side
-                    newChatApplicationVolume = (1f / center * (trackBarBalance.Maximum - trackBarBalance.Value));
+                    newChatApplicationVolume = (1f / center * (trackBarBalance.Maximum - value));
                     newHighestOtherApplicationVolume = 1;
                 }
                 else
