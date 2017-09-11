@@ -31,6 +31,33 @@ namespace VolumeBalancer
         public MainForm()
         {
             InitializeComponent();
+
+            // read user settings
+            UserSettings.readSettings();
+
+            // we need initialize the form before being able to interact with the controls
+            // therefore we start hidden
+            Hide();
+
+            // set the chat application
+            textBoxChatApplication.Text = UserSettings.getChatApplication();
+
+            // pre-set the audio application drop down list
+            UpdateDropDownListAudioApplications();
+
+            // set the balance
+            trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
+
+            // set the hotkeys
+            SetHotkeys();
+
+            // start thread for polling audio applications
+            _updateApplicationListThread = new Thread(UpdateApplicationListJob);
+            _updateApplicationListThread.Start();
+
+            // show the GUI if the chat application is not saved in the user settings
+            if (UserSettings.getChatApplication() == "")
+                Show();
         }
 
 
@@ -487,34 +514,6 @@ namespace VolumeBalancer
 
 
         #region gui events
-        
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-
-            // read user settings
-            UserSettings.readSettings();
-
-            // set the chat application
-            textBoxChatApplication.Text = UserSettings.getChatApplication();
-
-            // pre-set the audio application drop down list
-            UpdateDropDownListAudioApplications();
-
-            // set the balance
-            trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
-
-            // set the hotkeys
-            SetHotkeys();
-
-            // start thread for polling audio applications
-            _updateApplicationListThread = new Thread(UpdateApplicationListJob);
-            _updateApplicationListThread.Start();
-
-            // show the GUI if the chat application is not stored in the user settings
-            if (UserSettings.getChatApplication() == "")
-                Show();
-        }
-
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {

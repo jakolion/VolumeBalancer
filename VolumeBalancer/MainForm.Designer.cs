@@ -232,6 +232,7 @@
             // 
             this.textBoxHotkeyResetAllVolumes.Location = new System.Drawing.Point(216, 107);
             this.textBoxHotkeyResetAllVolumes.Name = "textBoxHotkeyResetAllVolumes";
+            this.textBoxHotkeyResetAllVolumes.ReadOnly = true;
             this.textBoxHotkeyResetAllVolumes.Size = new System.Drawing.Size(317, 20);
             this.textBoxHotkeyResetAllVolumes.TabIndex = 7;
             this.textBoxHotkeyResetAllVolumes.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxHotkeyResetAllVolumes_KeyDown);
@@ -240,6 +241,7 @@
             // 
             this.textBoxHotkeyResetBalance.Location = new System.Drawing.Point(216, 81);
             this.textBoxHotkeyResetBalance.Name = "textBoxHotkeyResetBalance";
+            this.textBoxHotkeyResetBalance.ReadOnly = true;
             this.textBoxHotkeyResetBalance.Size = new System.Drawing.Size(317, 20);
             this.textBoxHotkeyResetBalance.TabIndex = 5;
             this.textBoxHotkeyResetBalance.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxHotkeyResetBalance_KeyDown);
@@ -248,6 +250,7 @@
             // 
             this.textBoxHotkeyIncreaseOtherApplicationVolume.Location = new System.Drawing.Point(216, 55);
             this.textBoxHotkeyIncreaseOtherApplicationVolume.Name = "textBoxHotkeyIncreaseOtherApplicationVolume";
+            this.textBoxHotkeyIncreaseOtherApplicationVolume.ReadOnly = true;
             this.textBoxHotkeyIncreaseOtherApplicationVolume.Size = new System.Drawing.Size(317, 20);
             this.textBoxHotkeyIncreaseOtherApplicationVolume.TabIndex = 3;
             this.textBoxHotkeyIncreaseOtherApplicationVolume.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxHotkeyIncreaseOtherApplicationsVolume_KeyDown);
@@ -265,6 +268,7 @@
             // 
             this.textBoxHotkeyIncreaseChatApplicationVolume.Location = new System.Drawing.Point(216, 29);
             this.textBoxHotkeyIncreaseChatApplicationVolume.Name = "textBoxHotkeyIncreaseChatApplicationVolume";
+            this.textBoxHotkeyIncreaseChatApplicationVolume.ReadOnly = true;
             this.textBoxHotkeyIncreaseChatApplicationVolume.Size = new System.Drawing.Size(317, 20);
             this.textBoxHotkeyIncreaseChatApplicationVolume.TabIndex = 1;
             this.textBoxHotkeyIncreaseChatApplicationVolume.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxShortcutIncreaseChatVolume_KeyDown);
@@ -298,7 +302,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VolumeBalancer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBalance)).EndInit();
             this.groupBoxBalance.ResumeLayout(false);
             this.groupBoxBalance.PerformLayout();
