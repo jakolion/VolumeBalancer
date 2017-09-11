@@ -149,16 +149,16 @@ namespace VolumeBalancer
             {
                 // calculate modifier id
                 int modifierId = 0;
-                if (hotkey.getModifierKeys() == Keys.Shift)
+                if ((hotkey.getModifierKeys() & Keys.Shift) != Keys.None)
                     modifierId += MOD_SHIFT;
 
-                if (hotkey.getModifierKeys() == Keys.Control)
+                if ((hotkey.getModifierKeys() & Keys.Control) != Keys.None)
                     modifierId += MOD_CONTROL;
 
-                if (hotkey.getModifierKeys() == Keys.LWin || hotkey.getModifierKeys() == Keys.RWin)
+                if ((hotkey.getModifierKeys() & Keys.LWin) != Keys.None || (hotkey.getModifierKeys() & Keys.RWin) != Keys.None)
                     modifierId += MOD_WIN;
 
-                if (hotkey.getModifierKeys() == Keys.Alt)
+                if ((hotkey.getModifierKeys() & Keys.Alt) != Keys.None)
                     modifierId += MOD_ALT;
 
                 // set hotkey
