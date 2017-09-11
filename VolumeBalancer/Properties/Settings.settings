@@ -2,13 +2,13 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VolumeBalancer.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="chatApplication" Type="System.String" Scope="User">
+    <Setting Name="focusApplication" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="balancePosition" Type="System.UInt32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="hotkeyIncreaseChatApplicationVolume" Type="System.String" Scope="User">
+    <Setting Name="hotkeyIncreaseFocusApplicationVolume" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="hotkeyIncreaseOtherApplicationVolume" Type="System.String" Scope="User">

@@ -18,11 +18,12 @@ namespace VolumeBalancer
     public partial class MainForm : Form, IAudioSessionEventsHandler
     {
         private List<AudioApp> _audioAppList = new List<AudioApp>();
+        private string _currentFocusApplication;
         private bool _guiUpdateByEventIsRunning = false;
         private Thread _updateApplicationListThread;
         public bool updateApplicationListThreadAbort;
 
-        const int HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME = 1;
+        const int HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME = 1;
         const int HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME = 2;
         const int HOTKEY_RESET_BALANCE = 3;
         const int HOTKEY_RESET_ALL_VOLUMES = 4;
@@ -39,8 +40,9 @@ namespace VolumeBalancer
             // therefore we start hidden
             Hide();
 
-            // set the chat application
-            textBoxChatApplication.Text = UserSettings.getChatApplication();
+            // set the focus application
+            _currentFocusApplication = UserSettings.getFocusApplication();
+            textBoxMainFocusApplication.Text = UserSettings.getFocusApplication();
 
             // pre-set the audio application drop down list
             UpdateDropDownListAudioApplications();
@@ -55,8 +57,8 @@ namespace VolumeBalancer
             _updateApplicationListThread = new Thread(UpdateApplicationListJob);
             _updateApplicationListThread.Start();
 
-            // show the GUI if the chat application is not saved in the user settings
-            if (UserSettings.getChatApplication() == "")
+            // show the GUI if the focus application is not saved in the user settings
+            if (UserSettings.getFocusApplication() == "")
                 Show();
         }
 
@@ -68,7 +70,6 @@ namespace VolumeBalancer
         {
             // clear the list
             _audioAppList.Clear();
-            //_audioAppList.TrimExcess();
 
             // get current sessions
             MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
@@ -106,6 +107,9 @@ namespace VolumeBalancer
 
             // update GUI
             UpdateBalanceSlider();
+
+            // update temp focus application text box
+            UpdateTempFocusApplicationTextBox();
         }
 
 
@@ -124,8 +128,8 @@ namespace VolumeBalancer
         // set all hotkeys
         private void SetHotkeys()
         {
-            SetHotkey(HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseChatVolume());
-            SetHotkeyTextBox(textBoxHotkeyIncreaseChatApplicationVolume, UserSettings.getHotkeyIncreaseChatVolume());
+            SetHotkey(HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseFocusApplicationVolume());
+            SetHotkeyTextBox(textBoxHotkeyIncreaseFocusApplicationVolume, UserSettings.getHotkeyIncreaseFocusApplicationVolume());
 
             SetHotkey(HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseOtherApplicationVolume());
             SetHotkeyTextBox(textBoxHotkeyIncreaseOtherApplicationVolume, UserSettings.getHotkeyIncreaseOtherApplicationVolume());
@@ -184,8 +188,8 @@ namespace VolumeBalancer
         {
             switch (hotkeyId)
             {
-                case HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME:
-                    UserSettings.setHotkeyIncreaseChatVolume(hotkey);
+                case HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME:
+                    UserSettings.setHotkeyIncreaseFocusApplicationVolume(hotkey);
                     break;
 
                 case HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME:
@@ -268,19 +272,19 @@ namespace VolumeBalancer
 
         // get application volumes
         // sets loudest application to 1
-        private void GetApplicationVolumes(out float chatApplicationVolume, out float highestOtherApplicationVolume)
+        private void GetApplicationVolumes(out float focusApplicationVolume, out float highestOtherApplicationVolume)
         {
-            chatApplicationVolume = 0;
+            focusApplicationVolume = 0;
             highestOtherApplicationVolume = 0;
 
-            // get highest volume of chat application and other application
+            // get highest volume of focus application and other application
             for (int i = 0; i < _audioAppList.Count; i++)
             {
                 AudioApp app = _audioAppList[i];
                 AudioSessionControl session = app.session;
-                if (app.path == UserSettings.getChatApplication())
+                if (app.path == _currentFocusApplication)
                 {
-                    chatApplicationVolume = session.SimpleAudioVolume.Volume;
+                    focusApplicationVolume = session.SimpleAudioVolume.Volume;
                 }
                 else
                 {
@@ -289,21 +293,21 @@ namespace VolumeBalancer
                 }
             }
 
-            // return if chat application isn't running
-            if (!AudioApplicationIsRunning(UserSettings.getChatApplication())) return;
+            // return if focus application isn't running
+            if (!AudioApplicationIsRunning(_currentFocusApplication)) return;
 
             // return if only the audio application is running
-            if (AudioApplicationIsRunning(UserSettings.getChatApplication()) && _audioAppList.Count == 1) return;
+            if (AudioApplicationIsRunning(_currentFocusApplication) && _audioAppList.Count == 1) return;
 
-            // set the loudest application (also chat) to 1
-            if (chatApplicationVolume < 1 && highestOtherApplicationVolume < 1)
+            // set the loudest application (also focus application) to 1
+            if (focusApplicationVolume < 1 && highestOtherApplicationVolume < 1)
             {
                 float multiplier = 0;
-                if (chatApplicationVolume >= highestOtherApplicationVolume)
+                if (focusApplicationVolume >= highestOtherApplicationVolume)
                 {
-                    multiplier = 1 + (100 / chatApplicationVolume * (1 - chatApplicationVolume) / 100);
+                    multiplier = 1 + (100 / focusApplicationVolume * (1 - focusApplicationVolume) / 100);
                 }
-                else if (highestOtherApplicationVolume > chatApplicationVolume)
+                else if (highestOtherApplicationVolume > focusApplicationVolume)
                 {
                     multiplier = 1 + (100 / highestOtherApplicationVolume * (1 - highestOtherApplicationVolume) / 100);
                 }
@@ -319,45 +323,45 @@ namespace VolumeBalancer
         }
 
 
-        // updates the balance slider
+        // update the balance slider
         private void UpdateBalanceSlider()
         {
-            // get highest volume of chat application and other application
-            float chatApplicationVolume = 0;
+            // get highest volume of focus application and other application
+            float focusApplicationVolume = 0;
             float highestOtherApplicationVolume = 0;
-            GetApplicationVolumes(out chatApplicationVolume, out highestOtherApplicationVolume);
+            GetApplicationVolumes(out focusApplicationVolume, out highestOtherApplicationVolume);
 
-            // check if chat application is running
-            if (AudioApplicationIsRunning(UserSettings.getChatApplication()))
+            // check if focus application is running
+            if (AudioApplicationIsRunning(_currentFocusApplication))
             {
-                // check if only the chat aplication is running
+                // check if only the focus aplication is running
                 if (_audioAppList.Count == 1)
                 {
-                    // chat application is the only audio application running
+                    // focus application is the only audio application running
                     // so the slider can only be moved to the right side
-                    trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * chatApplicationVolume);
+                    trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * focusApplicationVolume);
 
-                    // disable label chat
-                    labelBalanceChatApplication.Enabled = false;
+                    // disable label focus
+                    labelBalanceFocusApplication.Enabled = false;
                 }
                 else
                 {
                     // calc position of the slider
-                    if (chatApplicationVolume > highestOtherApplicationVolume)
+                    if (focusApplicationVolume > highestOtherApplicationVolume)
                     {
                         trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
                     }
-                    else if (highestOtherApplicationVolume > chatApplicationVolume)
+                    else if (highestOtherApplicationVolume > focusApplicationVolume)
                     {
-                        trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * chatApplicationVolume);
+                        trackBarBalance.Value = trackBarBalance.Maximum - (int)Math.Round((trackBarBalance.Maximum / 2) * focusApplicationVolume);
                     }
                     else
                     {
                         trackBarBalance.Value = trackBarBalance.Maximum / 2;
                     }
 
-                    // enable label chat
-                    labelBalanceChatApplication.Enabled = true;
+                    // enable label focus
+                    labelBalanceFocusApplication.Enabled = true;
                 }
 
                 // enable label other
@@ -368,14 +372,14 @@ namespace VolumeBalancer
             }
             else
             {
-                // check if a chat application is set and not empty
-                if (UserSettings.getChatApplication() == "")
+                // check if a focus application is set and not empty
+                if (UserSettings.getFocusApplication() == "")
                 {
                     // disable label other
                     labelBalanceOtherApplications.Enabled = false;
 
-                    // disable label chat
-                    labelBalanceChatApplication.Enabled = false;
+                    // disable label focus
+                    labelBalanceFocusApplication.Enabled = false;
 
                     // disable balance group and move slider to the center
                     groupBoxBalance.Enabled = false;
@@ -383,13 +387,13 @@ namespace VolumeBalancer
                 }
                 else
                 {
-                    // chat application is not running
+                    // focus application is not running
 
                     // disable label other
                     labelBalanceOtherApplications.Enabled = false;
 
-                    // enable label chat
-                    labelBalanceChatApplication.Enabled = true;
+                    // enable label focus
+                    labelBalanceFocusApplication.Enabled = true;
 
                     // enable balance group
                     groupBoxBalance.Enabled = true;
@@ -398,6 +402,16 @@ namespace VolumeBalancer
                     trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
                 }
             }
+        }
+
+
+        // update the temp focus application text box
+        private void UpdateTempFocusApplicationTextBox()
+        {
+            if (_currentFocusApplication != UserSettings.getFocusApplication())
+                textBoxTemporaryFocusApplication.Text = _currentFocusApplication;
+            else
+                textBoxTemporaryFocusApplication.Text = "-";
         }
 
 
@@ -456,10 +470,10 @@ namespace VolumeBalancer
         }
 
 
-        // increase chat volume
-        private void IncreaseChatVolume()
+        // increase focus volume
+        private void IncreaseFocusApplicationVolume()
         {
-            // move slider to the left (to chat aplication)
+            // move slider to the left (to focus aplication)
             if (trackBarBalance.Value > trackBarBalance.Minimum)
                 trackBarBalance.Value--;
         }
@@ -536,9 +550,10 @@ namespace VolumeBalancer
         {
             if (comboAudioApplications.SelectedIndex > 0)
             {
-                string newChatApplication = comboAudioApplications.SelectedItem.ToString();
-                textBoxChatApplication.Text = newChatApplication;
-                UserSettings.setChatApplication(newChatApplication);
+                string newFocusApplication = comboAudioApplications.SelectedItem.ToString();
+                textBoxMainFocusApplication.Text = newFocusApplication;
+                UserSettings.setFocusApplication(newFocusApplication);
+                _currentFocusApplication = newFocusApplication;
                 comboAudioApplications.SelectedIndex = 0;
                 ResetBalance();
             }
@@ -553,8 +568,9 @@ namespace VolumeBalancer
             ofd.Multiselect = false;
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                textBoxChatApplication.Text = ofd.FileName;
-                UserSettings.setChatApplication(ofd.FileName);
+                textBoxMainFocusApplication.Text = ofd.FileName;
+                UserSettings.setFocusApplication(ofd.FileName);
+                _currentFocusApplication = ofd.FileName;
                 ResetBalance();
             }
         }
@@ -562,39 +578,39 @@ namespace VolumeBalancer
 
         private void trackBarBalance_ValueChanged(object sender, EventArgs e)
         {
-            // skip if chat application name isn't set
-            if (UserSettings.getChatApplication() == "") return;
+            // skip if focus application name isn't set
+            if (UserSettings.getFocusApplication() == "") return;
 
             // check if an event is updating the UI
             if (!_guiUpdateByEventIsRunning)
             {
-                // get highest volume of chat application and other application
-                float chatApplicationVolume = 0;
+                // get highest volume of focus application and other application
+                float focusApplicationVolume = 0;
                 float highestOtherApplicationVolume = 0;
-                GetApplicationVolumes(out chatApplicationVolume, out highestOtherApplicationVolume);
+                GetApplicationVolumes(out focusApplicationVolume, out highestOtherApplicationVolume);
 
                 int center = trackBarBalance.Maximum / 2;
                 int value = trackBarBalance.Value;
-                float newChatApplicationVolume = 0;
+                float newFocusApplicationVolume = 0;
                 float newHighestOtherApplicationVolume = 0;
 
                 // check position of slider
                 if (value < center)
                 {
-                    // slider is on chat application side
-                    newChatApplicationVolume = 1;
+                    // slider is on focus application side
+                    newFocusApplicationVolume = 1;
                     newHighestOtherApplicationVolume = (1f / center * value);
                 }
-                else if (value > center && AudioApplicationIsRunning(UserSettings.getChatApplication()))
+                else if (value > center && AudioApplicationIsRunning(_currentFocusApplication))
                 {
                     // slider is on other application side
-                    newChatApplicationVolume = (1f / center * (trackBarBalance.Maximum - value));
+                    newFocusApplicationVolume = (1f / center * (trackBarBalance.Maximum - value));
                     newHighestOtherApplicationVolume = 1;
                 }
                 else
                 {
                     // slider is centered
-                    newChatApplicationVolume = 1;
+                    newFocusApplicationVolume = 1;
                     newHighestOtherApplicationVolume = 1;
                 }
 
@@ -605,9 +621,9 @@ namespace VolumeBalancer
                 for (int i = 0; i < _audioAppList.Count; i++)
                 {
                     AudioApp app = _audioAppList[i];
-                    if (app.path == UserSettings.getChatApplication())
+                    if (app.path == _currentFocusApplication)
                     {
-                        app.session.SimpleAudioVolume.Volume = newChatApplicationVolume;
+                        app.session.SimpleAudioVolume.Volume = newFocusApplicationVolume;
                     }
                     else
                     {
@@ -626,10 +642,10 @@ namespace VolumeBalancer
         }
 
 
-        private void buttonIncreaseChatApplicationVolume_Click(object sender, EventArgs e)
+        private void buttonIncreaseFocusApplicationVolume_Click(object sender, EventArgs e)
         {
-            // increase chat volume
-            IncreaseChatVolume();
+            // increase focus volume
+            IncreaseFocusApplicationVolume();
         }
 
 
@@ -647,9 +663,9 @@ namespace VolumeBalancer
         }
 
 
-        private void textBoxShortcutIncreaseChatVolume_KeyDown(object sender, KeyEventArgs e)
+        private void textBoxShortcutIncreaseFocusApplicationVolume_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME);
+            HotkeyPressed((TextBox)sender, e, HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME);
         }
 
 
@@ -707,8 +723,8 @@ namespace VolumeBalancer
         {
             if (m.Msg == WM_HOTKEY)
             {
-                if ((int)m.WParam == HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME)
-                    IncreaseChatVolume();
+                if ((int)m.WParam == HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME)
+                    IncreaseFocusApplicationVolume();
 
                 else if ((int)m.WParam == HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME)
                     IncreaseOtherApplicationVolume();

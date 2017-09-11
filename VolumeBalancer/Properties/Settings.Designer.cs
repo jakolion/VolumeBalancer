@@ -26,12 +26,12 @@ namespace VolumeBalancer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string chatApplication {
+        public string focusApplication {
             get {
-                return ((string)(this["chatApplication"]));
+                return ((string)(this["focusApplication"]));
             }
             set {
-                this["chatApplication"] = value;
+                this["focusApplication"] = value;
             }
         }
         
@@ -50,12 +50,12 @@ namespace VolumeBalancer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string hotkeyIncreaseChatApplicationVolume {
+        public string hotkeyIncreaseFocusApplicationVolume {
             get {
-                return ((string)(this["hotkeyIncreaseChatApplicationVolume"]));
+                return ((string)(this["hotkeyIncreaseFocusApplicationVolume"]));
             }
             set {
-                this["hotkeyIncreaseChatApplicationVolume"] = value;
+                this["hotkeyIncreaseFocusApplicationVolume"] = value;
             }
         }
         
