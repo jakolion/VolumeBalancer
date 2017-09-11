@@ -13,12 +13,17 @@ namespace VolumeBalancer
     {
         private static string _chatApplication;
         private static uint _balancePosition;
-        private static Hotkey _hotkeyIncreaseChatVolume;
+        private static Hotkey _hotkeyIncreaseChatApplicationVolume;
+        private static Hotkey _hotkeyIncreaseOtherApplicationVolume;
+        private static Hotkey _hotkeyResetBalance;
+        private static Hotkey _hotkeyResetAllVolumes;
+
 
         public static string getChatApplication()
         {
             return _chatApplication;
         }
+
 
         public static void setChatApplication(string chatApplication)
         {
@@ -27,10 +32,12 @@ namespace VolumeBalancer
             Properties.Settings.Default.Save();
         }
 
+
         public static uint getBalancePosition()
         {
             return _balancePosition;
         }
+
 
         public static void setBalancePosition(uint balancePosition)
         {
@@ -39,24 +46,73 @@ namespace VolumeBalancer
             Properties.Settings.Default.Save();
         }
 
+
         public static Hotkey getHotkeyIncreaseChatVolume()
         {
-            return _hotkeyIncreaseChatVolume;
+            return _hotkeyIncreaseChatApplicationVolume;
         }
+
 
         public static void setHotkeyIncreaseChatVolume(Hotkey hotkey)
         {
-            _hotkeyIncreaseChatVolume = hotkey;
-            Properties.Settings.Default.hotkeyIncreaseChatVolume = HotkeyToString(hotkey);
+            _hotkeyIncreaseChatApplicationVolume = hotkey;
+            Properties.Settings.Default.hotkeyIncreaseChatApplicationVolume = HotkeyToString(hotkey);
             Properties.Settings.Default.Save();
         }
+
+
+        public static Hotkey getHotkeyIncreaseOtherApplicationVolume()
+        {
+            return _hotkeyIncreaseOtherApplicationVolume;
+        }
+
+
+        public static void setHotkeyIncreaseOtherApplicationVolume(Hotkey hotkey)
+        {
+            _hotkeyIncreaseOtherApplicationVolume = hotkey;
+            Properties.Settings.Default.hotkeyIncreaseOtherApplicationVolume = HotkeyToString(hotkey);
+            Properties.Settings.Default.Save();
+        }
+
+
+        public static Hotkey getHotkeyResetBalance()
+        {
+            return _hotkeyResetBalance;
+        }
+
+
+        public static void setHotkeyResetBalance(Hotkey hotkey)
+        {
+            _hotkeyResetBalance = hotkey;
+            Properties.Settings.Default.hotkeyResetBalance = HotkeyToString(hotkey);
+            Properties.Settings.Default.Save();
+        }
+
+
+        public static Hotkey getHotkeyResetAllVolumes()
+        {
+            return _hotkeyResetAllVolumes;
+        }
+
+
+        public static void setHotkeyResetAllVolumes(Hotkey hotkey)
+        {
+            _hotkeyResetAllVolumes = hotkey;
+            Properties.Settings.Default.hotkeyResetAllVolumes = HotkeyToString(hotkey);
+            Properties.Settings.Default.Save();
+        }
+
 
         public static void readSettings()
         {
             _chatApplication = Properties.Settings.Default.chatApplication;
             _balancePosition = Properties.Settings.Default.balancePosition;
-            _hotkeyIncreaseChatVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseChatVolume);
+            _hotkeyIncreaseChatApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseChatApplicationVolume);
+            _hotkeyIncreaseOtherApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseOtherApplicationVolume);
+            _hotkeyResetBalance = StringToHotkey(Properties.Settings.Default.hotkeyResetBalance);
+            _hotkeyResetAllVolumes = StringToHotkey(Properties.Settings.Default.hotkeyResetAllVolumes);
         }
+
 
         private static string HotkeyToString(Hotkey hotkey)
         {
@@ -66,6 +122,7 @@ namespace VolumeBalancer
                 return Convert.ToBase64String(ms.ToArray());
             }
         }
+
 
         private static Hotkey StringToHotkey(string base64String)
         {

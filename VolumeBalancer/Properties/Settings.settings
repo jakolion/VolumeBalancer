@@ -8,7 +8,16 @@
     <Setting Name="balancePosition" Type="System.UInt32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="hotkeyIncreaseChatVolume" Type="System.String" Scope="User">
+    <Setting Name="hotkeyIncreaseChatApplicationVolume" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="hotkeyIncreaseOtherApplicationVolume" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="hotkeyResetBalance" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="hotkeyResetAllVolumes" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

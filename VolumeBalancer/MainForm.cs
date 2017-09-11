@@ -22,10 +22,10 @@ namespace VolumeBalancer
         private Thread _updateApplicationListThread;
         public bool updateApplicationListThreadAbort;
 
-        const int HOTKEY_INCREASE_CHAT = 1;
-        const int HOTKEY_INCREASE_OTHER_APPS = 2;
+        const int HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME = 1;
+        const int HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME = 2;
         const int HOTKEY_RESET_BALANCE = 3;
-        const int HOTKEY_RESET_ALL_APP_VOLUME = 4;
+        const int HOTKEY_RESET_ALL_VOLUMES = 4;
 
 
         public MainForm()
@@ -134,12 +134,22 @@ namespace VolumeBalancer
         // set all hotkeys
         private void SetHotkeys()
         {
-            SetHotkey(HOTKEY_INCREASE_CHAT, UserSettings.getHotkeyIncreaseChatVolume(), textBoxShortcutIncreaseChatVolume);
+            SetHotkey(HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseChatVolume());
+            SetHotkeyTextBox(textBoxHotkeyIncreaseChatApplicationVolume, UserSettings.getHotkeyIncreaseChatVolume());
+
+            SetHotkey(HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseOtherApplicationVolume());
+            SetHotkeyTextBox(textBoxHotkeyIncreaseOtherApplicationVolume, UserSettings.getHotkeyIncreaseOtherApplicationVolume());
+
+            SetHotkey(HOTKEY_RESET_BALANCE, UserSettings.getHotkeyResetBalance());
+            SetHotkeyTextBox(textBoxHotkeyResetBalance, UserSettings.getHotkeyResetBalance());
+
+            SetHotkey(HOTKEY_RESET_ALL_VOLUMES, UserSettings.getHotkeyResetAllVolumes());
+            SetHotkeyTextBox(textBoxHotkeyResetAllVolumes, UserSettings.getHotkeyResetAllVolumes());
         }
 
 
         // set a specific hotkey
-        private void SetHotkey(int hotkeyId, Hotkey hotkey, TextBox textBox)
+        private void SetHotkey(int hotkeyId, Hotkey hotkey)
         {
             // unregister old hotkey
             UnregisterHotKey(this.Handle, hotkeyId);
@@ -164,15 +174,11 @@ namespace VolumeBalancer
                 // set hotkey
                 RegisterHotKey(this.Handle, hotkeyId, modifierId, (int)hotkey.getPressedKey());
             }
-
-            // set the textbox
-            if (textBox != null)
-                SetHotKeyTextBox(textBox, hotkey);
         }
 
 
-        // set the textbox text for a hotkey
-        private void SetHotKeyTextBox(TextBox textBox, Hotkey hotkey)
+        // set the textbox text for a specific hotkey
+        private void SetHotkeyTextBox(TextBox textBox, Hotkey hotkey)
         {
             // combine key data
             Keys keys = hotkey.getModifierKeys() | hotkey.getPressedKey();
@@ -180,6 +186,81 @@ namespace VolumeBalancer
             // convert the key data for the text box
             var converter = new KeysConverter();
             textBox.Text = converter.ConvertToString(keys);
+        }
+
+
+        // save a specific hotkey in user settings
+        private void SaveHotkeyInUserSettings(int hotkeyId, Hotkey hotkey)
+        {
+            switch (hotkeyId)
+            {
+                case HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME:
+                    UserSettings.setHotkeyIncreaseChatVolume(hotkey);
+                    break;
+
+                case HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME:
+                    UserSettings.setHotkeyIncreaseOtherApplicationVolume(hotkey);
+                    break;
+
+                case HOTKEY_RESET_BALANCE:
+                    UserSettings.setHotkeyResetBalance(hotkey);
+                    break;
+
+                case HOTKEY_RESET_ALL_VOLUMES:
+                    UserSettings.setHotkeyResetAllVolumes(hotkey);
+                    break;
+            }
+        }
+
+
+        // records an hotkey pressed on textbox
+        private void HotkeyPressed(TextBox textBox, KeyEventArgs e, int hotkeyId)
+        {
+            if (e.KeyCode != Keys.Back && e.KeyCode != Keys.Delete)
+            {
+                // get modifier keys
+                Keys modifierKeys = e.Modifiers;
+
+                // remove modifier keys
+                Keys pressedKey = e.KeyData ^ modifierKeys;
+
+                if (
+                    modifierKeys != Keys.None &&
+                    pressedKey != Keys.None &&
+                    pressedKey != Keys.Menu &&
+                    pressedKey != Keys.ShiftKey &&
+                    pressedKey != Keys.ControlKey)
+                {
+                    // create a new hotkey object
+                    Hotkey hotkey = new Hotkey(modifierKeys, pressedKey);
+
+                    // save the hotkey
+                    SaveHotkeyInUserSettings(hotkeyId, hotkey);
+
+                    // apply the new hotkey
+                    SetHotkey(hotkeyId, hotkey);
+
+                    // write the new hotkey to the textbox
+                    SetHotkeyTextBox(textBox, hotkey);
+                }
+            }
+            else
+            {
+                // create a new hotkey object
+                Hotkey hotkey = new Hotkey(Keys.None, Keys.None);
+
+                // save the hotkey
+                SaveHotkeyInUserSettings(hotkeyId, hotkey);
+
+                // apply the new hotkey
+                SetHotkey(hotkeyId, hotkey);
+
+                // write the new hotkey to the textbox
+                SetHotkeyTextBox(textBox, hotkey);
+            }
+
+            e.Handled = true;
+            e.SuppressKeyPress = true;
         }
 
 
@@ -392,7 +473,7 @@ namespace VolumeBalancer
 
 
         // increase other apps volume
-        private void IncreaseOtherAppsVolume()
+        private void IncreaseOtherApplicationVolume()
         {
             // move slider to the right (to other aplications)
             if (trackBarBalance.Value < trackBarBalance.Maximum)
@@ -413,7 +494,6 @@ namespace VolumeBalancer
 
 
         // poll for new audio applications
-        // because events are not working on every pc
         private void UpdateApplicationListJob()
         {
             updateApplicationListThreadAbort = false;
@@ -546,69 +626,48 @@ namespace VolumeBalancer
         }
 
 
-        private void buttonIncreaseChat_Click(object sender, EventArgs e)
+        private void buttonIncreaseChatApplicationVolume_Click(object sender, EventArgs e)
         {
             // increase chat volume
             IncreaseChatVolume();
         }
 
 
-        private void buttonReset_Click(object sender, EventArgs e)
+        private void buttonResetBalance_Click(object sender, EventArgs e)
         {
             // reset balance
             ResetBalance();
         }
 
 
-        private void buttonIncreaseOther_Click(object sender, EventArgs e)
+        private void buttonIncreaseOtherApplicationVolume_Click(object sender, EventArgs e)
         {
             // increase other apps volume
-            IncreaseOtherAppsVolume();
+            IncreaseOtherApplicationVolume();
         }
 
 
         private void textBoxShortcutIncreaseChatVolume_KeyDown(object sender, KeyEventArgs e)
         {
-            TextBox tb = (TextBox)sender;
-            if (e.KeyCode != Keys.Back && e.KeyCode != Keys.Delete)
-            {
-                // get modifier keys
-                Keys modifierKeys = e.Modifiers;
+            HotkeyPressed((TextBox)sender, e, HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME);
+        }
 
-                // remove modifier keys
-                Keys pressedKey = e.KeyData ^ modifierKeys;
 
-                if (
-                    modifierKeys != Keys.None &&
-                    pressedKey != Keys.None &&
-                    pressedKey != Keys.Menu &&
-                    pressedKey != Keys.ShiftKey &&
-                    pressedKey != Keys.ControlKey)
-                {
-                    // create a new hotkey object
-                    Hotkey h = new Hotkey(modifierKeys, pressedKey);
+        private void textBoxHotkeyIncreaseOtherApplicationsVolume_KeyDown(object sender, KeyEventArgs e)
+        {
+            HotkeyPressed((TextBox)sender, e, HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME);
+        }
 
-                    // save the hotkey
-                    UserSettings.setHotkeyIncreaseChatVolume(h);
 
-                    // apply the new hotkey
-                    SetHotkey(HOTKEY_INCREASE_CHAT, h, tb);
-                }
-            }
-            else
-            {
-                // create a new hotkey object
-                Hotkey h = new Hotkey(Keys.None, Keys.None);
+        private void textBoxHotkeyResetBalance_KeyDown(object sender, KeyEventArgs e)
+        {
+            HotkeyPressed((TextBox)sender, e, HOTKEY_RESET_BALANCE);
+        }
 
-                // save the hotkey
-                UserSettings.setHotkeyIncreaseChatVolume(h);
 
-                // apply the new hotkey
-                SetHotkey(HOTKEY_INCREASE_CHAT, h, tb);
-            }
-
-            e.Handled = true;
-            e.SuppressKeyPress = true;
+        private void textBoxHotkeyResetAllVolumes_KeyDown(object sender, KeyEventArgs e)
+        {
+            HotkeyPressed((TextBox)sender, e, HOTKEY_RESET_ALL_VOLUMES);
         }
 
 
@@ -648,16 +707,16 @@ namespace VolumeBalancer
         {
             if (m.Msg == WM_HOTKEY)
             {
-                if ((int)m.WParam == HOTKEY_INCREASE_CHAT)
+                if ((int)m.WParam == HOTKEY_INCREASE_CHAT_APPLICATION_VOLUME)
                     IncreaseChatVolume();
 
-                else if ((int)m.WParam == HOTKEY_INCREASE_OTHER_APPS)
-                    IncreaseOtherAppsVolume();
+                else if ((int)m.WParam == HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME)
+                    IncreaseOtherApplicationVolume();
 
                 else if ((int)m.WParam == HOTKEY_RESET_BALANCE)
                     ResetBalance();
 
-                else if ((int)m.WParam == HOTKEY_RESET_ALL_APP_VOLUME)
+                else if ((int)m.WParam == HOTKEY_RESET_ALL_VOLUMES)
                     ResetAllAudioApplicationVolume();
             }
             base.WndProc(ref m);
@@ -693,7 +752,6 @@ namespace VolumeBalancer
         const int WM_HOTKEY = 0x0312;
 
         #endregion
-
     }
 
 }

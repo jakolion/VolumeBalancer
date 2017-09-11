@@ -50,12 +50,48 @@ namespace VolumeBalancer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string hotkeyIncreaseChatVolume {
+        public string hotkeyIncreaseChatApplicationVolume {
             get {
-                return ((string)(this["hotkeyIncreaseChatVolume"]));
+                return ((string)(this["hotkeyIncreaseChatApplicationVolume"]));
             }
             set {
-                this["hotkeyIncreaseChatVolume"] = value;
+                this["hotkeyIncreaseChatApplicationVolume"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string hotkeyIncreaseOtherApplicationVolume {
+            get {
+                return ((string)(this["hotkeyIncreaseOtherApplicationVolume"]));
+            }
+            set {
+                this["hotkeyIncreaseOtherApplicationVolume"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string hotkeyResetBalance {
+            get {
+                return ((string)(this["hotkeyResetBalance"]));
+            }
+            set {
+                this["hotkeyResetBalance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string hotkeyResetAllVolumes {
+            get {
+                return ((string)(this["hotkeyResetAllVolumes"]));
+            }
+            set {
+                this["hotkeyResetAllVolumes"] = value;
             }
         }
     }
