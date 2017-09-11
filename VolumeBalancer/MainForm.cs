@@ -144,22 +144,26 @@ namespace VolumeBalancer
             // unregister old hotkey
             UnregisterHotKey(this.Handle, hotkeyId);
 
-            // calculate modifier id
-            int modifierId = 0;
-            if (hotkey.getModifierKeys() == Keys.Shift)
-                modifierId += MOD_SHIFT;
+            // check if hotkey is cleared
+            if (hotkey.getModifierKeys() != Keys.None && hotkey.getPressedKey() != Keys.None)
+            {
+                // calculate modifier id
+                int modifierId = 0;
+                if (hotkey.getModifierKeys() == Keys.Shift)
+                    modifierId += MOD_SHIFT;
 
-            if (hotkey.getModifierKeys() == Keys.Control)
-                modifierId += MOD_CONTROL;
+                if (hotkey.getModifierKeys() == Keys.Control)
+                    modifierId += MOD_CONTROL;
 
-            if (hotkey.getModifierKeys() == Keys.LWin || hotkey.getModifierKeys() == Keys.RWin)
-                modifierId += MOD_WIN;
+                if (hotkey.getModifierKeys() == Keys.LWin || hotkey.getModifierKeys() == Keys.RWin)
+                    modifierId += MOD_WIN;
 
-            if (hotkey.getModifierKeys() == Keys.Alt)
-                modifierId += MOD_ALT;
+                if (hotkey.getModifierKeys() == Keys.Alt)
+                    modifierId += MOD_ALT;
 
-            // set hotkey
-            RegisterHotKey(this.Handle, hotkeyId, modifierId, (int)hotkey.getPressedKey());
+                // set hotkey
+                RegisterHotKey(this.Handle, hotkeyId, modifierId, (int)hotkey.getPressedKey());
+            }
 
             // set the textbox
             if (textBox != null)
@@ -566,7 +570,7 @@ namespace VolumeBalancer
         private void textBoxShortcutIncreaseChatVolume_KeyDown(object sender, KeyEventArgs e)
         {
             TextBox tb = (TextBox)sender;
-            if (e.KeyCode != Keys.Back)
+            if (e.KeyCode != Keys.Back && e.KeyCode != Keys.Delete)
             {
                 // get modifier keys
                 Keys modifierKeys = e.Modifiers;
@@ -593,7 +597,14 @@ namespace VolumeBalancer
             }
             else
             {
-                tb.Text = "";
+                // create a new hotkey object
+                Hotkey h = new Hotkey(Keys.None, Keys.None);
+
+                // save the hotkey
+                UserSettings.setHotkeyIncreaseChatVolume(h);
+
+                // apply the new hotkey
+                SetHotkey(HOTKEY_INCREASE_CHAT, h, tb);
             }
 
             e.Handled = true;
