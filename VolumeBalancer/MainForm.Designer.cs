@@ -75,8 +75,8 @@
             this.comboAudioApplications.Name = "comboAudioApplications";
             this.comboAudioApplications.Size = new System.Drawing.Size(356, 21);
             this.comboAudioApplications.TabIndex = 4;
+            this.comboAudioApplications.DropDown += new System.EventHandler(this.comboAudioApplications_DropDown);
             this.comboAudioApplications.SelectedIndexChanged += new System.EventHandler(this.comboAudioApplications_SelectedIndexChanged);
-            this.comboAudioApplications.DropDownClosed += new System.EventHandler(this.comboAudioApplications_DropDownClosed);
             // 
             // labelChatApplication
             // 
@@ -298,6 +298,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VolumeBalancer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBalance)).EndInit();
             this.groupBoxBalance.ResumeLayout(false);
             this.groupBoxBalance.PerformLayout();

@@ -31,36 +31,6 @@ namespace VolumeBalancer
         public MainForm()
         {
             InitializeComponent();
-
-            // read user settings
-            UserSettings.readSettings();
-
-            // set the chat application
-            textBoxChatApplication.Text = UserSettings.getChatApplication();
-
-            // set the balance
-            trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
-
-            // we need to call "Show()" before being able to set the hotkeys 
-            // also _updateApplicationListThread need this to be able to access the controls
-            // therefore we need to start invisible and hide the form after that
-            Opacity = 0;
-            ShowInTaskbar = false;
-            Show();
-            Hide();
-            Opacity = 100;
-            ShowInTaskbar = true;
-
-            // set the hotkeys
-            SetHotkeys();
-
-            // start thread for polling audio applications
-            _updateApplicationListThread = new Thread(UpdateApplicationListJob);
-            _updateApplicationListThread.Start();
-
-            // show the GUI if the chat application is not stored in the user settings
-            if (UserSettings.getChatApplication() == "")
-                Show();
         }
 
 
@@ -105,13 +75,6 @@ namespace VolumeBalancer
                     }
                     session.RegisterEventClient(this);
                 }
-            }
-
-            // put the applications to the combo box and select the first item
-            // prevent the update if the combo box is dropped down
-            if (!comboAudioApplications.DroppedDown)
-            {
-                UpdateDropDownListAudioApplications();
             }
 
             // update GUI
@@ -516,6 +479,33 @@ namespace VolumeBalancer
 
 
         #region gui events
+        
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+            // read user settings
+            UserSettings.readSettings();
+
+            // set the chat application
+            textBoxChatApplication.Text = UserSettings.getChatApplication();
+
+            // pre-set the audio application drop down list
+            UpdateDropDownListAudioApplications();
+
+            // set the balance
+            trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
+
+            // set the hotkeys
+            SetHotkeys();
+
+            // start thread for polling audio applications
+            _updateApplicationListThread = new Thread(UpdateApplicationListJob);
+            _updateApplicationListThread.Start();
+
+            // show the GUI if the chat application is not stored in the user settings
+            if (UserSettings.getChatApplication() == "")
+                Show();
+        }
 
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -523,6 +513,12 @@ namespace VolumeBalancer
             // hide window instead of closing it
             Hide();
             e.Cancel = true;
+        }
+
+
+        private void comboAudioApplications_DropDown(object sender, EventArgs e)
+        {
+            UpdateDropDownListAudioApplications();
         }
 
 
@@ -536,12 +532,6 @@ namespace VolumeBalancer
                 comboAudioApplications.SelectedIndex = 0;
                 ResetBalance();
             }
-        }
-
-
-        private void comboAudioApplications_DropDownClosed(object sender, EventArgs e)
-        {
-            UpdateDropDownListAudioApplications();
         }
 
 
@@ -752,6 +742,7 @@ namespace VolumeBalancer
         const int WM_HOTKEY = 0x0312;
 
         #endregion
+
     }
 
 }
