@@ -70,6 +70,7 @@
             this.comboAudioApplications.Size = new System.Drawing.Size(356, 21);
             this.comboAudioApplications.TabIndex = 4;
             this.comboAudioApplications.SelectedIndexChanged += new System.EventHandler(this.comboAudioApplications_SelectedIndexChanged);
+            this.comboAudioApplications.DropDownClosed += new System.EventHandler(this.comboAudioApplications_DropDownClosed);
             // 
             // labelChatApplication
             // 
@@ -99,8 +100,8 @@
             this.groupBoxBalance.Controls.Add(this.labelBalanceChatApplication);
             this.groupBoxBalance.Controls.Add(this.trackBarBalance);
             this.groupBoxBalance.Controls.Add(this.labelBalanceCenter);
-            this.groupBoxBalance.Location = new System.Drawing.Point(19, 73);
-            this.groupBoxBalance.Margin = new System.Windows.Forms.Padding(10);
+            this.groupBoxBalance.Location = new System.Drawing.Point(19, 74);
+            this.groupBoxBalance.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxBalance.Name = "groupBoxBalance";
             this.groupBoxBalance.Padding = new System.Windows.Forms.Padding(13);
             this.groupBoxBalance.Size = new System.Drawing.Size(549, 115);
@@ -188,10 +189,11 @@
             // 
             this.groupBoxShortcuts.Controls.Add(this.textBoxShortcutIncreaseChatVolume);
             this.groupBoxShortcuts.Controls.Add(this.labelShortcutIncreaseChatVolume);
-            this.groupBoxShortcuts.Location = new System.Drawing.Point(19, 201);
+            this.groupBoxShortcuts.Location = new System.Drawing.Point(19, 202);
+            this.groupBoxShortcuts.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxShortcuts.Name = "groupBoxShortcuts";
             this.groupBoxShortcuts.Padding = new System.Windows.Forms.Padding(13);
-            this.groupBoxShortcuts.Size = new System.Drawing.Size(549, 282);
+            this.groupBoxShortcuts.Size = new System.Drawing.Size(549, 156);
             this.groupBoxShortcuts.TabIndex = 6;
             this.groupBoxShortcuts.TabStop = false;
             this.groupBoxShortcuts.Text = "Shortcuts";

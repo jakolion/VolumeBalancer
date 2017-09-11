@@ -19,7 +19,8 @@ namespace VolumeBalancer
     {
         private List<AudioApp> _audioAppList = new List<AudioApp>();
         private bool _guiUpdateByEventIsRunning = false;
-        public Thread _updateApplicationListThread;
+        private Thread _updateApplicationListThread;
+        public bool updateApplicationListThreadAbort;
 
         const int HOTKEY_INCREASE_CHAT = 1;
         const int HOTKEY_INCREASE_OTHER_APPS = 2;
@@ -34,13 +35,15 @@ namespace VolumeBalancer
             // read user settings
             UserSettings.readSettings();
 
-            // set the chat application and balance
+            // set the chat application
             textBoxChatApplication.Text = UserSettings.getChatApplication();
+
+            // set the balance
             trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
 
-            // we need to call "Show()" so that the
-            // _updateApplicationListThread is able to access the controls
-            // therefore we need to start invisible
+            // we need to call "Show()" before being able to set the hotkeys 
+            // also _updateApplicationListThread need this to be able to access the controls
+            // therefore we need to start invisible and hide the form after that
             Opacity = 0;
             ShowInTaskbar = false;
             Show();
@@ -49,18 +52,19 @@ namespace VolumeBalancer
             ShowInTaskbar = true;
 
             // set the hotkeys
-            setHotkeys();
+            SetHotkeys();
 
             // start thread for polling audio applications
             _updateApplicationListThread = new Thread(UpdateApplicationListJob);
             _updateApplicationListThread.Start();
 
-            // if the chat application is not stored in the user settings
-            // we show the GUI
+            // show the GUI if the chat application is not stored in the user settings
             if (UserSettings.getChatApplication() == "")
                 Show();
         }
 
+
+        #region main functions
 
         // update the application list
         private void UpdateApplicationList()
@@ -96,24 +100,18 @@ namespace VolumeBalancer
                             applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
 
                         // add new audio app to list if not already existing
-                        if (!audioApplicationIsRunning(applicationPath))
+                        if (!AudioApplicationIsRunning(applicationPath))
                             _audioAppList.Add(new AudioApp(session, applicationPath));
                     }
                     session.RegisterEventClient(this);
                 }
             }
 
-
             // put the applications to the combo box and select the first item
             // prevent the update if the combo box is dropped down
             if (!comboAudioApplications.DroppedDown)
             {
-                comboAudioApplications.Items.Clear();
-                comboAudioApplications.Sorted = true;
-                comboAudioApplications.Items.AddRange(_audioAppList.ToArray());
-                comboAudioApplications.Sorted = false;
-                comboAudioApplications.Items.Insert(0, "Select a running audio application");
-                comboAudioApplications.SelectedIndex = 0;
+                UpdateDropDownListAudioApplications();
             }
 
             // update GUI
@@ -121,15 +119,27 @@ namespace VolumeBalancer
         }
 
 
-        // set all hotkeys
-        void setHotkeys()
+        // update drop down list with audio applications
+        private void UpdateDropDownListAudioApplications()
         {
-            setHotkey(HOTKEY_INCREASE_CHAT, UserSettings.getHotkeyIncreaseChatVolume(), textBoxShortcutIncreaseChatVolume);
+            comboAudioApplications.Items.Clear();
+            comboAudioApplications.Sorted = true;
+            comboAudioApplications.Items.AddRange(_audioAppList.ToArray());
+            comboAudioApplications.Sorted = false;
+            comboAudioApplications.Items.Insert(0, "Select a running audio application");
+            comboAudioApplications.SelectedIndex = 0;
+        }
+
+
+        // set all hotkeys
+        private void SetHotkeys()
+        {
+            SetHotkey(HOTKEY_INCREASE_CHAT, UserSettings.getHotkeyIncreaseChatVolume(), textBoxShortcutIncreaseChatVolume);
         }
 
 
         // set a specific hotkey
-        void setHotkey(int hotkeyId, Hotkey hotkey, TextBox textBox)
+        private void SetHotkey(int hotkeyId, Hotkey hotkey, TextBox textBox)
         {
             // unregister old hotkey
             UnregisterHotKey(this.Handle, hotkeyId);
@@ -153,12 +163,12 @@ namespace VolumeBalancer
 
             // set the textbox
             if (textBox != null)
-                setHotKeyTextBox(textBox, hotkey);
+                SetHotKeyTextBox(textBox, hotkey);
         }
 
 
         // set the textbox text for a hotkey
-        void setHotKeyTextBox(TextBox textBox, Hotkey hotkey)
+        private void SetHotKeyTextBox(TextBox textBox, Hotkey hotkey)
         {
             // combine key data
             Keys keys = hotkey.getModifierKeys() | hotkey.getPressedKey();
@@ -171,7 +181,7 @@ namespace VolumeBalancer
 
         // returns true if the application path can be found
         // in the current audio application list
-        bool audioApplicationIsRunning(string applicationPath)
+        private bool AudioApplicationIsRunning(string applicationPath)
         {
             if (applicationPath == "") return false;
             return _audioAppList.FirstOrDefault(x => x.ToString() == applicationPath) != null;
@@ -180,7 +190,7 @@ namespace VolumeBalancer
 
         // get application volumes
         // sets loudest application to 1
-        void GetApplicationVolumes(out float chatApplicationVolume, out float highestOtherApplicationVolume)
+        private void GetApplicationVolumes(out float chatApplicationVolume, out float highestOtherApplicationVolume)
         {
             chatApplicationVolume = 0;
             highestOtherApplicationVolume = 0;
@@ -202,10 +212,10 @@ namespace VolumeBalancer
             }
 
             // return if chat application isn't running
-            if (!audioApplicationIsRunning(UserSettings.getChatApplication())) return;
+            if (!AudioApplicationIsRunning(UserSettings.getChatApplication())) return;
 
             // return if only the audio application is running
-            if (audioApplicationIsRunning(UserSettings.getChatApplication()) && _audioAppList.Count == 1) return;
+            if (AudioApplicationIsRunning(UserSettings.getChatApplication()) && _audioAppList.Count == 1) return;
 
             // set the loudest application (also chat) to 1
             if (chatApplicationVolume < 1 && highestOtherApplicationVolume < 1)
@@ -232,7 +242,7 @@ namespace VolumeBalancer
 
 
         // updates the balance slider
-        void UpdateBalanceSlider()
+        private void UpdateBalanceSlider()
         {
             // get highest volume of chat application and other application
             float chatApplicationVolume = 0;
@@ -240,7 +250,7 @@ namespace VolumeBalancer
             GetApplicationVolumes(out chatApplicationVolume, out highestOtherApplicationVolume);
 
             // check if chat application is running
-            if (audioApplicationIsRunning(UserSettings.getChatApplication()))
+            if (AudioApplicationIsRunning(UserSettings.getChatApplication()))
             {
                 // check if only the chat aplication is running
                 if (_audioAppList.Count == 1)
@@ -314,7 +324,7 @@ namespace VolumeBalancer
 
 
         // checks if a process is running
-        bool ProcessExists(uint processId)
+        private bool ProcessExists(uint processId)
         {
             try
             {
@@ -329,7 +339,7 @@ namespace VolumeBalancer
 
 
         // get path of process
-        string GetProcessPath(uint processId)
+        private string GetProcessPath(uint processId)
         {
             const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
             IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
@@ -354,7 +364,7 @@ namespace VolumeBalancer
 
 
         // reset balance
-        void ResetBalance()
+        private void ResetBalance()
         {
             // store old track bar value
             int oldValue = trackBarBalance.Value;
@@ -369,7 +379,7 @@ namespace VolumeBalancer
 
 
         // increase chat volume
-        void IncreaseChatVolume()
+        private void IncreaseChatVolume()
         {
             // move slider to the left (to chat aplication)
             if (trackBarBalance.Value > trackBarBalance.Minimum)
@@ -378,7 +388,7 @@ namespace VolumeBalancer
 
 
         // increase other apps volume
-        void IncreaseOtherAppsVolume()
+        private void IncreaseOtherAppsVolume()
         {
             // move slider to the right (to other aplications)
             if (trackBarBalance.Value < trackBarBalance.Maximum)
@@ -387,7 +397,7 @@ namespace VolumeBalancer
 
 
         // reset all audio application volumes
-        void ResetAllAudioApplicationVolume()
+        private void ResetAllAudioApplicationVolume()
         {
             // loop through audio applications and set session volume
             for (int i = 0; i < _audioAppList.Count; i++)
@@ -400,9 +410,10 @@ namespace VolumeBalancer
 
         // poll for new audio applications
         // because events are not working on every pc
-        void UpdateApplicationListJob()
+        private void UpdateApplicationListJob()
         {
-            while (true)
+            updateApplicationListThreadAbort = false;
+            while (!updateApplicationListThreadAbort)
             {
                 try
                 {
@@ -417,8 +428,10 @@ namespace VolumeBalancer
             }
         }
 
+        #endregion
 
-        #region GUI events
+
+        #region gui events
 
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -439,6 +452,12 @@ namespace VolumeBalancer
                 comboAudioApplications.SelectedIndex = 0;
                 ResetBalance();
             }
+        }
+
+
+        private void comboAudioApplications_DropDownClosed(object sender, EventArgs e)
+        {
+            UpdateDropDownListAudioApplications();
         }
 
 
@@ -482,7 +501,7 @@ namespace VolumeBalancer
                     newChatApplicationVolume = 1;
                     newHighestOtherApplicationVolume = (1f / center * value);
                 }
-                else if (value > center && audioApplicationIsRunning(UserSettings.getChatApplication()))
+                else if (value > center && AudioApplicationIsRunning(UserSettings.getChatApplication()))
                 {
                     // slider is on other application side
                     newChatApplicationVolume = (1f / center * (trackBarBalance.Maximum - value));
@@ -569,7 +588,7 @@ namespace VolumeBalancer
                     UserSettings.setHotkeyIncreaseChatVolume(h);
 
                     // apply the new hotkey
-                    setHotkey(HOTKEY_INCREASE_CHAT, h, tb);
+                    SetHotkey(HOTKEY_INCREASE_CHAT, h, tb);
                 }
             }
             else
@@ -663,6 +682,7 @@ namespace VolumeBalancer
         const int WM_HOTKEY = 0x0312;
 
         #endregion
+
     }
 
 }

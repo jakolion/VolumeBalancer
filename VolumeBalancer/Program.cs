@@ -73,7 +73,7 @@ namespace VolumeBalancer
         private void OnExit(object sender, EventArgs e)
         {
             // exit
-            _updateApplicationListThread.Abort();
+            updateApplicationListThreadAbort = true;
             Dispose(true);
             Application.Exit();
         }
