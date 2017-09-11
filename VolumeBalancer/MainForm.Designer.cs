@@ -42,6 +42,10 @@
             this.buttonBrowse = new System.Windows.Forms.Button();
             this.labelOr = new System.Windows.Forms.Label();
             this.groupBoxHotkeys = new System.Windows.Forms.GroupBox();
+            this.labelActivateMainFocusApplication = new System.Windows.Forms.Label();
+            this.textBoxHotkeyActivateMainFocusApplication = new System.Windows.Forms.TextBox();
+            this.labelActivateTemporaryFocusApplication = new System.Windows.Forms.Label();
+            this.textBoxHotkeyActivateTemporaryFocusApplication = new System.Windows.Forms.TextBox();
             this.labelResetAllVolumes = new System.Windows.Forms.Label();
             this.labelResetBalance = new System.Windows.Forms.Label();
             this.textBoxHotkeyResetAllVolumes = new System.Windows.Forms.TextBox();
@@ -50,7 +54,7 @@
             this.labelHotkeyIncreaseOtherApplicationsVolume = new System.Windows.Forms.Label();
             this.textBoxHotkeyIncreaseFocusApplicationVolume = new System.Windows.Forms.TextBox();
             this.labelHotkeyIncreaseFocusApplicationVolume = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
+            this.labelTemporaryFocusApplication = new System.Windows.Forms.Label();
             this.textBoxTemporaryFocusApplication = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBalance)).BeginInit();
             this.groupBoxBalance.SuspendLayout();
@@ -113,7 +117,7 @@
             this.groupBoxBalance.Name = "groupBoxBalance";
             this.groupBoxBalance.Padding = new System.Windows.Forms.Padding(13);
             this.groupBoxBalance.Size = new System.Drawing.Size(599, 115);
-            this.groupBoxBalance.TabIndex = 5;
+            this.groupBoxBalance.TabIndex = 7;
             this.groupBoxBalance.TabStop = false;
             this.groupBoxBalance.Text = "Balance";
             // 
@@ -195,6 +199,10 @@
             // 
             // groupBoxHotkeys
             // 
+            this.groupBoxHotkeys.Controls.Add(this.labelActivateMainFocusApplication);
+            this.groupBoxHotkeys.Controls.Add(this.textBoxHotkeyActivateMainFocusApplication);
+            this.groupBoxHotkeys.Controls.Add(this.labelActivateTemporaryFocusApplication);
+            this.groupBoxHotkeys.Controls.Add(this.textBoxHotkeyActivateTemporaryFocusApplication);
             this.groupBoxHotkeys.Controls.Add(this.labelResetAllVolumes);
             this.groupBoxHotkeys.Controls.Add(this.labelResetBalance);
             this.groupBoxHotkeys.Controls.Add(this.textBoxHotkeyResetAllVolumes);
@@ -207,18 +215,54 @@
             this.groupBoxHotkeys.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxHotkeys.Name = "groupBoxHotkeys";
             this.groupBoxHotkeys.Padding = new System.Windows.Forms.Padding(13);
-            this.groupBoxHotkeys.Size = new System.Drawing.Size(599, 239);
-            this.groupBoxHotkeys.TabIndex = 6;
+            this.groupBoxHotkeys.Size = new System.Drawing.Size(599, 196);
+            this.groupBoxHotkeys.TabIndex = 8;
             this.groupBoxHotkeys.TabStop = false;
             this.groupBoxHotkeys.Text = "Hotkeys";
+            // 
+            // labelActivateMainFocusApplication
+            // 
+            this.labelActivateMainFocusApplication.AutoSize = true;
+            this.labelActivateMainFocusApplication.Location = new System.Drawing.Point(16, 110);
+            this.labelActivateMainFocusApplication.Name = "labelActivateMainFocusApplication";
+            this.labelActivateMainFocusApplication.Size = new System.Drawing.Size(162, 13);
+            this.labelActivateMainFocusApplication.TabIndex = 6;
+            this.labelActivateMainFocusApplication.Text = "Activate Main Focus Application:";
+            // 
+            // textBoxHotkeyActivateMainFocusApplication
+            // 
+            this.textBoxHotkeyActivateMainFocusApplication.Location = new System.Drawing.Point(216, 107);
+            this.textBoxHotkeyActivateMainFocusApplication.Name = "textBoxHotkeyActivateMainFocusApplication";
+            this.textBoxHotkeyActivateMainFocusApplication.ReadOnly = true;
+            this.textBoxHotkeyActivateMainFocusApplication.Size = new System.Drawing.Size(213, 20);
+            this.textBoxHotkeyActivateMainFocusApplication.TabIndex = 7;
+            this.textBoxHotkeyActivateMainFocusApplication.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxHotkeyActivateMainFocusApplication_KeyDown);
+            // 
+            // labelActivateTemporaryFocusApplication
+            // 
+            this.labelActivateTemporaryFocusApplication.AutoSize = true;
+            this.labelActivateTemporaryFocusApplication.Location = new System.Drawing.Point(16, 136);
+            this.labelActivateTemporaryFocusApplication.Name = "labelActivateTemporaryFocusApplication";
+            this.labelActivateTemporaryFocusApplication.Size = new System.Drawing.Size(166, 13);
+            this.labelActivateTemporaryFocusApplication.TabIndex = 8;
+            this.labelActivateTemporaryFocusApplication.Text = "Set Temporary Focus Application:";
+            // 
+            // textBoxHotkeyActivateTemporaryFocusApplication
+            // 
+            this.textBoxHotkeyActivateTemporaryFocusApplication.Location = new System.Drawing.Point(216, 133);
+            this.textBoxHotkeyActivateTemporaryFocusApplication.Name = "textBoxHotkeyActivateTemporaryFocusApplication";
+            this.textBoxHotkeyActivateTemporaryFocusApplication.ReadOnly = true;
+            this.textBoxHotkeyActivateTemporaryFocusApplication.Size = new System.Drawing.Size(213, 20);
+            this.textBoxHotkeyActivateTemporaryFocusApplication.TabIndex = 9;
+            this.textBoxHotkeyActivateTemporaryFocusApplication.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxHotkeyActivateTemporaryFocusApplication_KeyDown);
             // 
             // labelResetAllVolumes
             // 
             this.labelResetAllVolumes.AutoSize = true;
-            this.labelResetAllVolumes.Location = new System.Drawing.Point(16, 197);
+            this.labelResetAllVolumes.Location = new System.Drawing.Point(16, 162);
             this.labelResetAllVolumes.Name = "labelResetAllVolumes";
             this.labelResetAllVolumes.Size = new System.Drawing.Size(95, 13);
-            this.labelResetAllVolumes.TabIndex = 6;
+            this.labelResetAllVolumes.TabIndex = 10;
             this.labelResetAllVolumes.Text = "Reset All Volumes:";
             // 
             // labelResetBalance
@@ -232,11 +276,11 @@
             // 
             // textBoxHotkeyResetAllVolumes
             // 
-            this.textBoxHotkeyResetAllVolumes.Location = new System.Drawing.Point(216, 194);
+            this.textBoxHotkeyResetAllVolumes.Location = new System.Drawing.Point(216, 159);
             this.textBoxHotkeyResetAllVolumes.Name = "textBoxHotkeyResetAllVolumes";
             this.textBoxHotkeyResetAllVolumes.ReadOnly = true;
             this.textBoxHotkeyResetAllVolumes.Size = new System.Drawing.Size(213, 20);
-            this.textBoxHotkeyResetAllVolumes.TabIndex = 7;
+            this.textBoxHotkeyResetAllVolumes.TabIndex = 11;
             this.textBoxHotkeyResetAllVolumes.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxHotkeyResetAllVolumes_KeyDown);
             // 
             // textBoxHotkeyResetBalance
@@ -284,14 +328,14 @@
             this.labelHotkeyIncreaseFocusApplicationVolume.TabIndex = 0;
             this.labelHotkeyIncreaseFocusApplicationVolume.Text = "Increase Focus Application Volume:";
             // 
-            // label1
+            // labelTemporaryFocusApplication
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 79);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(92, 13);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "Temporary Focus:";
+            this.labelTemporaryFocusApplication.AutoSize = true;
+            this.labelTemporaryFocusApplication.Location = new System.Drawing.Point(16, 79);
+            this.labelTemporaryFocusApplication.Name = "labelTemporaryFocusApplication";
+            this.labelTemporaryFocusApplication.Size = new System.Drawing.Size(92, 13);
+            this.labelTemporaryFocusApplication.TabIndex = 5;
+            this.labelTemporaryFocusApplication.Text = "Temporary Focus:";
             // 
             // textBoxTemporaryFocusApplication
             // 
@@ -299,15 +343,15 @@
             this.textBoxTemporaryFocusApplication.Name = "textBoxTemporaryFocusApplication";
             this.textBoxTemporaryFocusApplication.ReadOnly = true;
             this.textBoxTemporaryFocusApplication.Size = new System.Drawing.Size(476, 20);
-            this.textBoxTemporaryFocusApplication.TabIndex = 8;
+            this.textBoxTemporaryFocusApplication.TabIndex = 6;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(634, 492);
+            this.ClientSize = new System.Drawing.Size(634, 448);
             this.Controls.Add(this.textBoxTemporaryFocusApplication);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.labelTemporaryFocusApplication);
             this.Controls.Add(this.groupBoxHotkeys);
             this.Controls.Add(this.labelOr);
             this.Controls.Add(this.buttonBrowse);
@@ -357,8 +401,12 @@
         private System.Windows.Forms.TextBox textBoxHotkeyResetBalance;
         private System.Windows.Forms.Label labelResetBalance;
         private System.Windows.Forms.Label labelResetAllVolumes;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labelTemporaryFocusApplication;
         private System.Windows.Forms.TextBox textBoxTemporaryFocusApplication;
+        private System.Windows.Forms.Label labelActivateTemporaryFocusApplication;
+        private System.Windows.Forms.TextBox textBoxHotkeyActivateTemporaryFocusApplication;
+        private System.Windows.Forms.Label labelActivateMainFocusApplication;
+        private System.Windows.Forms.TextBox textBoxHotkeyActivateMainFocusApplication;
     }
 }
 

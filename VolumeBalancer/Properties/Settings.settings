@@ -2,7 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="VolumeBalancer.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="focusApplication" Type="System.String" Scope="User">
+    <Setting Name="mainFocusApplication" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="balancePosition" Type="System.UInt32" Scope="User">
@@ -15,6 +15,12 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="hotkeyResetBalance" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="hotkeyActivateMainFocusApplication" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="hotkeyActivateTemporaryFocusApplication" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="hotkeyResetAllVolumes" Type="System.String" Scope="User">

@@ -26,12 +26,12 @@ namespace VolumeBalancer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string focusApplication {
+        public string mainFocusApplication {
             get {
-                return ((string)(this["focusApplication"]));
+                return ((string)(this["mainFocusApplication"]));
             }
             set {
-                this["focusApplication"] = value;
+                this["mainFocusApplication"] = value;
             }
         }
         
@@ -80,6 +80,30 @@ namespace VolumeBalancer.Properties {
             }
             set {
                 this["hotkeyResetBalance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string hotkeyActivateMainFocusApplication {
+            get {
+                return ((string)(this["hotkeyActivateMainFocusApplication"]));
+            }
+            set {
+                this["hotkeyActivateMainFocusApplication"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string hotkeyActivateTemporaryFocusApplication {
+            get {
+                return ((string)(this["hotkeyActivateTemporaryFocusApplication"]));
+            }
+            set {
+                this["hotkeyActivateTemporaryFocusApplication"] = value;
             }
         }
         

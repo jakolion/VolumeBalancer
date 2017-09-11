@@ -11,24 +11,26 @@ namespace VolumeBalancer
 {
     static class UserSettings
     {
-        private static string _focusApplication;
+        private static string _mainFocusApplication;
         private static uint _balancePosition;
         private static Hotkey _hotkeyIncreaseFocusApplicationVolume;
         private static Hotkey _hotkeyIncreaseOtherApplicationVolume;
         private static Hotkey _hotkeyResetBalance;
+        private static Hotkey _hotkeyActivateMainFocusApplication;
+        private static Hotkey _hotkeyActivateTemporaryFocusApplication;
         private static Hotkey _hotkeyResetAllVolumes;
 
 
-        public static string getFocusApplication()
+        public static string getMainFocusApplication()
         {
-            return _focusApplication;
+            return _mainFocusApplication;
         }
 
 
-        public static void setFocusApplication(string focusApplication)
+        public static void setMainFocusApplication(string mainFocusApplication)
         {
-            _focusApplication = focusApplication;
-            Properties.Settings.Default.focusApplication = focusApplication;
+            _mainFocusApplication = mainFocusApplication;
+            Properties.Settings.Default.mainFocusApplication = mainFocusApplication;
             Properties.Settings.Default.Save();
         }
 
@@ -89,6 +91,34 @@ namespace VolumeBalancer
         }
 
 
+        public static Hotkey getHotkeyActivateMainFocusApplication()
+        {
+            return _hotkeyActivateMainFocusApplication;
+        }
+
+
+        public static void setHotkeyActivateMainFocusApplication(Hotkey hotkey)
+        {
+            _hotkeyActivateMainFocusApplication = hotkey;
+            Properties.Settings.Default.hotkeyActivateMainFocusApplication = HotkeyToString(hotkey);
+            Properties.Settings.Default.Save();
+        }
+
+
+        public static Hotkey getHotkeyActivateTemporaryFocusApplication()
+        {
+            return _hotkeyActivateTemporaryFocusApplication;
+        }
+
+
+        public static void setHotkeyActivateTemporaryFocusApplication(Hotkey hotkey)
+        {
+            _hotkeyActivateTemporaryFocusApplication = hotkey;
+            Properties.Settings.Default.hotkeyActivateTemporaryFocusApplication = HotkeyToString(hotkey);
+            Properties.Settings.Default.Save();
+        }
+
+
         public static Hotkey getHotkeyResetAllVolumes()
         {
             return _hotkeyResetAllVolumes;
@@ -105,11 +135,13 @@ namespace VolumeBalancer
 
         public static void readSettings()
         {
-            _focusApplication = Properties.Settings.Default.focusApplication;
+            _mainFocusApplication = Properties.Settings.Default.mainFocusApplication;
             _balancePosition = Properties.Settings.Default.balancePosition;
             _hotkeyIncreaseFocusApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseFocusApplicationVolume);
             _hotkeyIncreaseOtherApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseOtherApplicationVolume);
             _hotkeyResetBalance = StringToHotkey(Properties.Settings.Default.hotkeyResetBalance);
+            _hotkeyActivateMainFocusApplication = StringToHotkey(Properties.Settings.Default.hotkeyActivateMainFocusApplication);
+            _hotkeyActivateTemporaryFocusApplication = StringToHotkey(Properties.Settings.Default.hotkeyActivateTemporaryFocusApplication);
             _hotkeyResetAllVolumes = StringToHotkey(Properties.Settings.Default.hotkeyResetAllVolumes);
         }
 

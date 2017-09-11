@@ -26,7 +26,9 @@ namespace VolumeBalancer
         const int HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME = 1;
         const int HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME = 2;
         const int HOTKEY_RESET_BALANCE = 3;
-        const int HOTKEY_RESET_ALL_VOLUMES = 4;
+        const int HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION = 4;
+        const int HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION = 5;
+        const int HOTKEY_RESET_ALL_VOLUMES = 6;
 
 
         public MainForm()
@@ -41,8 +43,8 @@ namespace VolumeBalancer
             Hide();
 
             // set the focus application
-            _currentFocusApplication = UserSettings.getFocusApplication();
-            textBoxMainFocusApplication.Text = UserSettings.getFocusApplication();
+            _currentFocusApplication = UserSettings.getMainFocusApplication();
+            textBoxMainFocusApplication.Text = UserSettings.getMainFocusApplication();
 
             // pre-set the audio application drop down list
             UpdateDropDownListAudioApplications();
@@ -51,14 +53,14 @@ namespace VolumeBalancer
             trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
 
             // set the hotkeys
-            SetHotkeys();
+            SetAllHotkeys();
 
             // start thread for polling audio applications
             _updateApplicationListThread = new Thread(UpdateApplicationListJob);
             _updateApplicationListThread.Start();
 
             // show the GUI if the focus application is not saved in the user settings
-            if (UserSettings.getFocusApplication() == "")
+            if (UserSettings.getMainFocusApplication() == "")
                 Show();
         }
 
@@ -68,6 +70,8 @@ namespace VolumeBalancer
         // update the application list
         private void UpdateApplicationList()
         {
+            bool currentFocusApplicationIsRunning = false;
+
             // clear the list
             _audioAppList.Clear();
 
@@ -100,16 +104,24 @@ namespace VolumeBalancer
                         // add new audio app to list if not already existing
                         if (!AudioApplicationIsRunning(applicationPath))
                             _audioAppList.Add(new AudioApp(session, applicationPath));
+
+                        // check if current focus application is running
+                        if (applicationPath == _currentFocusApplication)
+                            currentFocusApplicationIsRunning = true;
                     }
                     session.RegisterEventClient(this);
                 }
             }
 
-            // update GUI
-            UpdateBalanceSlider();
+            // switch to main focus application if temporary focus application exits
+            if (_currentFocusApplication != UserSettings.getMainFocusApplication() && !currentFocusApplicationIsRunning)
+                ActivateMainFocusApplication();
 
             // update temp focus application text box
             UpdateTempFocusApplicationTextBox();
+
+            // update GUI
+            UpdateBalanceSlider();
         }
 
 
@@ -126,7 +138,7 @@ namespace VolumeBalancer
 
 
         // set all hotkeys
-        private void SetHotkeys()
+        private void SetAllHotkeys()
         {
             SetHotkey(HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseFocusApplicationVolume());
             SetHotkeyTextBox(textBoxHotkeyIncreaseFocusApplicationVolume, UserSettings.getHotkeyIncreaseFocusApplicationVolume());
@@ -136,6 +148,12 @@ namespace VolumeBalancer
 
             SetHotkey(HOTKEY_RESET_BALANCE, UserSettings.getHotkeyResetBalance());
             SetHotkeyTextBox(textBoxHotkeyResetBalance, UserSettings.getHotkeyResetBalance());
+
+            SetHotkey(HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION, UserSettings.getHotkeyActivateMainFocusApplication());
+            SetHotkeyTextBox(textBoxHotkeyActivateMainFocusApplication, UserSettings.getHotkeyActivateMainFocusApplication());
+
+            SetHotkey(HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION, UserSettings.getHotkeyActivateTemporaryFocusApplication());
+            SetHotkeyTextBox(textBoxHotkeyActivateTemporaryFocusApplication, UserSettings.getHotkeyActivateTemporaryFocusApplication());
 
             SetHotkey(HOTKEY_RESET_ALL_VOLUMES, UserSettings.getHotkeyResetAllVolumes());
             SetHotkeyTextBox(textBoxHotkeyResetAllVolumes, UserSettings.getHotkeyResetAllVolumes());
@@ -198,6 +216,14 @@ namespace VolumeBalancer
 
                 case HOTKEY_RESET_BALANCE:
                     UserSettings.setHotkeyResetBalance(hotkey);
+                    break;
+
+                case HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION:
+                    UserSettings.setHotkeyActivateMainFocusApplication(hotkey);
+                    break;
+
+                case HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION:
+                    UserSettings.setHotkeyActivateTemporaryFocusApplication(hotkey);
                     break;
 
                 case HOTKEY_RESET_ALL_VOLUMES:
@@ -323,6 +349,42 @@ namespace VolumeBalancer
         }
 
 
+        // activate main focus application
+        private void ActivateMainFocusApplication()
+        {
+            // set new focus application
+            _currentFocusApplication = UserSettings.getMainFocusApplication();
+
+            // update temp focus application text box
+            UpdateTempFocusApplicationTextBox();
+
+            // update GUI
+            UpdateBalanceSlider();
+        }
+
+
+        // activate temporary focus application
+        private void ActivateTemporaryFocusApplication()
+        {
+            // set new focus application to topmost application
+            IntPtr hwnd = GetForegroundWindow();
+            uint pid;
+            GetWindowThreadProcessId(hwnd, out pid);
+            string processPath = GetProcessPath(pid);
+            if (AudioApplicationIsRunning(processPath))
+            {
+                // set new focus application
+                _currentFocusApplication = processPath;
+
+                // update temp focus application text box
+                UpdateTempFocusApplicationTextBox();
+
+                // update GUI
+                UpdateBalanceSlider();
+            }
+        }
+
+
         // update the balance slider
         private void UpdateBalanceSlider()
         {
@@ -373,7 +435,7 @@ namespace VolumeBalancer
             else
             {
                 // check if a focus application is set and not empty
-                if (UserSettings.getFocusApplication() == "")
+                if (UserSettings.getMainFocusApplication() == "")
                 {
                     // disable label other
                     labelBalanceOtherApplications.Enabled = false;
@@ -408,10 +470,18 @@ namespace VolumeBalancer
         // update the temp focus application text box
         private void UpdateTempFocusApplicationTextBox()
         {
-            if (_currentFocusApplication != UserSettings.getFocusApplication())
-                textBoxTemporaryFocusApplication.Text = _currentFocusApplication;
+            if (_currentFocusApplication == UserSettings.getMainFocusApplication())
+            {
+                labelTemporaryFocusApplication.Enabled = false;
+                textBoxTemporaryFocusApplication.Text = "";
+                textBoxTemporaryFocusApplication.Enabled = false;
+            }
             else
-                textBoxTemporaryFocusApplication.Text = "-";
+            {
+                labelTemporaryFocusApplication.Enabled = true;
+                textBoxTemporaryFocusApplication.Text = _currentFocusApplication;
+                textBoxTemporaryFocusApplication.Enabled = true;
+            }
         }
 
 
@@ -552,10 +622,10 @@ namespace VolumeBalancer
             {
                 string newFocusApplication = comboAudioApplications.SelectedItem.ToString();
                 textBoxMainFocusApplication.Text = newFocusApplication;
-                UserSettings.setFocusApplication(newFocusApplication);
+                UserSettings.setMainFocusApplication(newFocusApplication);
                 _currentFocusApplication = newFocusApplication;
                 comboAudioApplications.SelectedIndex = 0;
-                ResetBalance();
+                ActivateMainFocusApplication();
             }
         }
 
@@ -569,9 +639,9 @@ namespace VolumeBalancer
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 textBoxMainFocusApplication.Text = ofd.FileName;
-                UserSettings.setFocusApplication(ofd.FileName);
+                UserSettings.setMainFocusApplication(ofd.FileName);
                 _currentFocusApplication = ofd.FileName;
-                ResetBalance();
+                ActivateMainFocusApplication();
             }
         }
 
@@ -579,7 +649,7 @@ namespace VolumeBalancer
         private void trackBarBalance_ValueChanged(object sender, EventArgs e)
         {
             // skip if focus application name isn't set
-            if (UserSettings.getFocusApplication() == "") return;
+            if (UserSettings.getMainFocusApplication() == "") return;
 
             // check if an event is updating the UI
             if (!_guiUpdateByEventIsRunning)
@@ -681,6 +751,18 @@ namespace VolumeBalancer
         }
 
 
+        private void textBoxHotkeyActivateMainFocusApplication_KeyDown(object sender, KeyEventArgs e)
+        {
+            HotkeyPressed((TextBox)sender, e, HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION);
+        }
+
+
+        private void textBoxHotkeyActivateTemporaryFocusApplication_KeyDown(object sender, KeyEventArgs e)
+        {
+            HotkeyPressed((TextBox)sender, e, HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION);
+        }
+
+
         private void textBoxHotkeyResetAllVolumes_KeyDown(object sender, KeyEventArgs e)
         {
             HotkeyPressed((TextBox)sender, e, HOTKEY_RESET_ALL_VOLUMES);
@@ -723,17 +805,32 @@ namespace VolumeBalancer
         {
             if (m.Msg == WM_HOTKEY)
             {
-                if ((int)m.WParam == HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME)
-                    IncreaseFocusApplicationVolume();
+                switch ((int)m.WParam)
+                {
+                    case HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME:
+                        IncreaseFocusApplicationVolume();
+                        break;
 
-                else if ((int)m.WParam == HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME)
-                    IncreaseOtherApplicationVolume();
+                    case HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME:
+                        IncreaseOtherApplicationVolume();
+                        break;
 
-                else if ((int)m.WParam == HOTKEY_RESET_BALANCE)
-                    ResetBalance();
+                    case HOTKEY_RESET_BALANCE:
+                        ResetBalance();
+                        break;
 
-                else if ((int)m.WParam == HOTKEY_RESET_ALL_VOLUMES)
-                    ResetAllAudioApplicationVolume();
+                    case HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION:
+                        ActivateMainFocusApplication();
+                        break;
+
+                    case HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION:
+                        ActivateTemporaryFocusApplication();
+                        break;
+
+                    case HOTKEY_RESET_ALL_VOLUMES:
+                        ResetAllAudioApplicationVolume();
+                        break;
+                }   
             }
             base.WndProc(ref m);
         }
@@ -766,6 +863,12 @@ namespace VolumeBalancer
         const int MOD_SHIFT = 0x0004;
         const int MOD_WIN = 0x0008;
         const int WM_HOTKEY = 0x0312;
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out uint ProcessId);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
 
         #endregion
 
