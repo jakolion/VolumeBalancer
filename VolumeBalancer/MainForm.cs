@@ -459,19 +459,27 @@ namespace VolumeBalancer
         // poll for new audio applications
         private void UpdateApplicationListJob()
         {
+            const long DELAY = 2 * TimeSpan.TicksPerSecond; // 2 seconds
             updateApplicationListThreadAbort = false;
+            long ticksTarget = DateTime.Now.Ticks;
+            long ticks;
             while (!updateApplicationListThreadAbort)
             {
-                try
+                ticks = DateTime.Now.Ticks;
+                if (ticks >= ticksTarget)
                 {
-                    this.BeginInvoke(new Action(delegate ()
+                    try
                     {
-                        UpdateApplicationList();
-                    }));
+                        this.BeginInvoke(new Action(delegate ()
+                        {
+                            UpdateApplicationList();
+                        }));
+                    }
+                    catch { }
+                    ticksTarget = DateTime.Now.Ticks + DELAY;
+                    GC.Collect();
                 }
-                catch { }
-                GC.Collect();
-                System.Threading.Thread.Sleep(2000);
+                System.Threading.Thread.Sleep(100);
             }
         }
 
