@@ -206,14 +206,31 @@ namespace VolumeBalancer
         // records an hotkey pressed on textbox
         private void HotkeyPressed(TextBox textBox, KeyEventArgs e, int hotkeyId)
         {
-            if (e.KeyCode != Keys.Back && e.KeyCode != Keys.Delete)
+            // get modifier keys
+            Keys modifierKeys = e.Modifiers;
+
+            // get non-modifier keys
+            Keys pressedKey = e.KeyData ^ modifierKeys;
+
+            if (modifierKeys == Keys.None && (pressedKey == Keys.Back || pressedKey == Keys.Delete))
             {
-                // get modifier keys
-                Keys modifierKeys = e.Modifiers;
+                // delete the hotkey
 
-                // remove modifier keys
-                Keys pressedKey = e.KeyData ^ modifierKeys;
+                // create a new hotkey object
+                Hotkey hotkey = new Hotkey(Keys.None, Keys.None);
 
+                // save the hotkey
+                SaveHotkeyInUserSettings(hotkeyId, hotkey);
+
+                // apply the new hotkey
+                SetHotkey(hotkeyId, hotkey);
+
+                // write the new hotkey to the textbox
+                SetHotkeyTextBox(textBox, hotkey);
+            }
+            else
+            {
+                // check if at least one modifier and another key was pressed
                 if (
                     modifierKeys != Keys.None &&
                     pressedKey != Keys.None &&
@@ -233,20 +250,6 @@ namespace VolumeBalancer
                     // write the new hotkey to the textbox
                     SetHotkeyTextBox(textBox, hotkey);
                 }
-            }
-            else
-            {
-                // create a new hotkey object
-                Hotkey hotkey = new Hotkey(Keys.None, Keys.None);
-
-                // save the hotkey
-                SaveHotkeyInUserSettings(hotkeyId, hotkey);
-
-                // apply the new hotkey
-                SetHotkey(hotkeyId, hotkey);
-
-                // write the new hotkey to the textbox
-                SetHotkeyTextBox(textBox, hotkey);
             }
 
             e.Handled = true;
