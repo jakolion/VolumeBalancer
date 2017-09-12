@@ -41,14 +41,17 @@ namespace VolumeBalancer
         {
             // create a tray menu
             trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Open GUI", OpenGui);
+            MenuItem version = new MenuItem("Version: " + Application.ProductVersion);
+            version.Enabled = false;
+            trayMenu.MenuItems.Add(version);
+            trayMenu.MenuItems.Add("Configuration ...", OpenGui);
             trayMenu.MenuItems.Add("-");
             trayMenu.MenuItems.Add("Exit", OnExit);
 
             // create a tray icon
             trayIcon = new NotifyIcon();
-            trayIcon.Text = "VolumeBalancer";
-            trayIcon.Icon = new Icon(SystemIcons.Application, 40, 40);
+            trayIcon.Text = Application.ProductName;
+            trayIcon.Icon = Properties.Resources.iconWhite;
 
             // add tray menu to icon
             trayIcon.ContextMenu = trayMenu;
