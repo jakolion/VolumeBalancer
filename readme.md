@@ -1,7 +1,21 @@
-## Volume Balancer
+# VolumeBalancer
 
-Volume Balancer is a tool for controlling the audio balance between a chat application and all other audio applications currently running.
+VolumeBalancer is a tool for controlling the audio balance between a specific application and all other audio applications currently running.
 
-## Used libraries
+# NuGet packages
 
-Volume Balancer uses the open source .NET audio library NAudio. All credits for this library goes to the author Mark Heath (mark.heath@gmail.com). Visit https://github.com/naudio/NAudio for more information and the latest source code.
+*   NAudio
+    Description: Audio library for .NET
+    Author: Mark Heath (mark.heath@gmail.com)
+    Project: https://github.com/naudio/NAudio
+
+*   Brutal.Dev.StrongNameSigner
+    Description: Automatic strong-name signing of referenced assemblies.
+    Author: Werner van Deventer
+    Project: https://github.com/brutaldev/StrongNameSigner
+
+# Credits
+
+*   Icon: https://www.flaticon.com/free-icon/sliders_107129
+    Author: Icon made by [Vaadin](https://vaadin.com/icons) from http://www.flaticon.com
+    License: Attribution 3.0 Unported (CC BY 3.0)
