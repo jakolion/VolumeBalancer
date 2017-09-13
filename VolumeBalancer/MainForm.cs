@@ -7,9 +7,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 using System.Diagnostics;
-using System.Management;
+using System.Windows.Forms;
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 
@@ -17,11 +16,19 @@ namespace VolumeBalancer
 {
     public partial class MainForm : Form, IAudioSessionEventsHandler
     {
+        private NotifyIcon trayIcon;
         private List<AudioApp> _audioAppList = new List<AudioApp>();
         private string _currentFocusApplication;
         private bool _guiUpdateByEventIsRunning = false;
         private Thread _updateApplicationListThread;
         public bool updateApplicationListThreadAbort;
+
+        const string AUTOSTART_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+        const string AUTOSTART_NAME = "VolumeBalancer";
+
+        const string TRAYICON_BLACK = "iconBlack";
+        const string TRAYICON_GREY = "iconGrey";
+        const string TRAYICON_WHITE = "iconWhite";
 
         const int HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME = 1;
         const int HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME = 2;
@@ -39,8 +46,27 @@ namespace VolumeBalancer
             UserSettings.readSettings();
 
             // we need initialize the form before being able to interact with the controls
-            // therefore we start hidden
             Hide();
+
+            // create a tray menu
+            ContextMenu trayMenu = new ContextMenu();
+            MenuItem version = new MenuItem("Version " + Application.ProductVersion);
+            version.Enabled = false;
+            trayMenu.MenuItems.Add(version);
+            trayMenu.MenuItems.Add("Configuration ...", OnTrayMenuConfigureClicked);
+            trayMenu.MenuItems.Add("-");
+            trayMenu.MenuItems.Add("Exit", OnTrayMenuExitClicked);
+
+            // create a tray icon
+            trayIcon = new NotifyIcon();
+            trayIcon.Text = Application.ProductName;
+            SetTrayIcon(UserSettings.getTrayIcon());
+
+            // add tray menu to icon
+            trayIcon.ContextMenu = trayMenu;
+            trayIcon.Visible = true;
+            trayIcon.MouseClick += OnTrayIconClicked;
+            trayIcon.MouseDoubleClick += OnTrayIconClicked;
 
             // set the focus application
             _currentFocusApplication = UserSettings.getMainFocusApplication();
@@ -59,6 +85,9 @@ namespace VolumeBalancer
             _updateApplicationListThread = new Thread(UpdateApplicationListJob);
             _updateApplicationListThread.Start();
 
+            // check autostart
+            CheckAutostartStatus();
+
             // show the GUI if the focus application is not saved in the user settings
             if (UserSettings.getMainFocusApplication() == "")
                 Show();
@@ -66,6 +95,74 @@ namespace VolumeBalancer
 
 
         #region main functions
+
+        // set tray icon
+        private void SetTrayIcon(string trayIconName)
+        {
+            if (Properties.Resources.ResourceManager.GetObject(trayIconName) == null)
+                trayIconName = TRAYICON_GREY;
+
+            trayIcon.Icon = (Icon)Properties.Resources.ResourceManager.GetObject(trayIconName);
+
+            // select radio button
+            switch (trayIconName)
+            {
+                case TRAYICON_BLACK:
+                    radioButtonTrayIconColorBlack.Select();
+                    break;
+
+                case TRAYICON_GREY:
+                    radioButtonTrayIconColorGrey.Select();
+                    break;
+
+                case TRAYICON_WHITE:
+                    radioButtonTrayIconColorWhite.Select();
+                    break;
+            }
+        }
+
+
+        // check autostart and set radio buttons
+        private void CheckAutostartStatus()
+        {
+            // get autostart path
+            string autostartPath = Helper.RegistryReadCurrentUser(AUTOSTART_PATH, AUTOSTART_NAME);
+
+            // autostart path does not exist
+            if (autostartPath == null)
+            {
+                radioButtonAutostartDisabled.Select();
+                return;
+            }
+
+            // check if autostart path is correct
+            string currentPath = Helper.GetProcessPath((uint)Process.GetCurrentProcess().Id);
+            if (currentPath != autostartPath)
+            {
+                // path is different, update the path
+                Helper.RegistryWriteCurrentUser(AUTOSTART_PATH, AUTOSTART_NAME, currentPath);
+            }
+
+            radioButtonAutostartEnabled.Select();
+        }
+
+
+        // enable autostart
+        private void EnableAutostart()
+        {
+            string currentPath = Helper.GetProcessPath((uint)Process.GetCurrentProcess().Id);
+            Helper.RegistryWriteCurrentUser(AUTOSTART_PATH, AUTOSTART_NAME, currentPath);
+            CheckAutostartStatus();
+        }
+
+
+        // disable autostart
+        private void DisableAutostart()
+        {
+            Helper.RegistryDeleteCurrentUser(AUTOSTART_PATH, AUTOSTART_NAME);
+            CheckAutostartStatus();
+        }
+
 
         // update the application list
         private void UpdateApplicationList()
@@ -88,7 +185,7 @@ namespace VolumeBalancer
             {
                 AudioSessionControl session = sessions[i];
                 // check if session is not expired and process exists
-                if (session.State != AudioSessionState.AudioSessionStateExpired && ProcessExists(session.GetProcessID))
+                if (session.State != AudioSessionState.AudioSessionStateExpired && Helper.ProcessExists(session.GetProcessID))
                 {
                     if (session.IsSystemSoundsSession)
                     {
@@ -97,7 +194,7 @@ namespace VolumeBalancer
                     else
                     {
                         // get full path of process if possible
-                        string applicationPath = GetProcessPath(session.GetProcessID);
+                        string applicationPath = Helper.GetProcessPath(session.GetProcessID);
                         if (applicationPath == "")
                             applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
 
@@ -367,10 +464,7 @@ namespace VolumeBalancer
         private void ActivateTemporaryFocusApplication()
         {
             // set new focus application to topmost application
-            IntPtr hwnd = GetForegroundWindow();
-            uint pid;
-            GetWindowThreadProcessId(hwnd, out pid);
-            string processPath = GetProcessPath(pid);
+            string processPath = Helper.GetProcessPath(Helper.GetTopmostProcessId());
             if (AudioApplicationIsRunning(processPath))
             {
                 // set new focus application
@@ -485,46 +579,6 @@ namespace VolumeBalancer
         }
 
 
-        // checks if a process is running
-        private bool ProcessExists(uint processId)
-        {
-            try
-            {
-                var process = Process.GetProcessById((int)processId);
-                return true;
-            }
-            catch (ArgumentException)
-            {
-                return false;
-            }
-        }
-
-
-        // get path of process
-        private string GetProcessPath(uint processId)
-        {
-            const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
-            IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
-            if (hProcess != IntPtr.Zero)
-            {
-                try
-                {
-                    StringBuilder buffer = new StringBuilder(1024);
-                    uint size = (uint)buffer.Capacity;
-                    if (QueryFullProcessImageName(hProcess, 0, buffer, ref size))
-                    {
-                        return buffer.ToString();
-                    }
-                }
-                finally
-                {
-                    CloseHandle(hProcess);
-                }
-            }
-            return string.Empty;
-        }
-
-
         // reset balance
         private void ResetBalance()
         {
@@ -602,6 +656,37 @@ namespace VolumeBalancer
 
         #region gui events
 
+        private void OnTrayIconClicked(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+                OnTrayMenuConfigureClicked(sender, e);
+        }
+
+
+        private void OnTrayMenuConfigureClicked(object sender, EventArgs e)
+        {
+            // show main form and bring to front
+            Show();
+            Activate();
+        }
+
+
+        private void OnTrayMenuExitClicked(object sender, EventArgs e)
+        {
+            // end thread
+            updateApplicationListThreadAbort = true;
+
+            // release the icon resource
+            trayIcon.Dispose();
+
+            // release form
+            Dispose();
+
+            // exit
+            Application.Exit();
+        }
+
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // hide window instead of closing it
@@ -632,16 +717,18 @@ namespace VolumeBalancer
 
         private void buttonBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Applications (*.exe)|*.exe";
-            ofd.FilterIndex = 1;
-            ofd.Multiselect = false;
-            if (ofd.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog ofd = new OpenFileDialog())
             {
-                textBoxMainFocusApplication.Text = ofd.FileName;
-                UserSettings.setMainFocusApplication(ofd.FileName);
-                _currentFocusApplication = ofd.FileName;
-                ActivateMainFocusApplication();
+                ofd.Filter = "Applications (*.exe)|*.exe";
+                ofd.FilterIndex = 1;
+                ofd.Multiselect = false;
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    textBoxMainFocusApplication.Text = ofd.FileName;
+                    UserSettings.setMainFocusApplication(ofd.FileName);
+                    _currentFocusApplication = ofd.FileName;
+                    ActivateMainFocusApplication();
+                }
             }
         }
 
@@ -769,6 +856,59 @@ namespace VolumeBalancer
         }
 
 
+        private void radioButtonTrayIconColorBlack_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
+            {
+                UserSettings.setTrayIcon(TRAYICON_BLACK);
+                SetTrayIcon(TRAYICON_BLACK);
+            }
+        }
+
+
+        private void radioButtonTrayIconColorGrey_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
+            {
+                UserSettings.setTrayIcon(TRAYICON_GREY);
+                SetTrayIcon(TRAYICON_GREY);
+            }
+        }
+
+
+        private void radioButtonTrayIconColorWhite_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
+            {
+                UserSettings.setTrayIcon(TRAYICON_WHITE);
+                SetTrayIcon(TRAYICON_WHITE);
+            }
+        }
+
+
+        private void radioButtonAutostartEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
+            {
+                EnableAutostart();
+            }
+        }
+            
+
+        private void radioButtonAutostartDisabled_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
+            {
+                DisableAutostart();
+            }
+        }
+
+
         #endregion
 
 
@@ -830,7 +970,7 @@ namespace VolumeBalancer
                     case HOTKEY_RESET_ALL_VOLUMES:
                         ResetAllAudioApplicationVolume();
                         break;
-                }   
+                }
             }
             base.WndProc(ref m);
         }
@@ -839,18 +979,6 @@ namespace VolumeBalancer
 
 
         #region imports
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, uint processId);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        static extern bool QueryFullProcessImageName(IntPtr hProcess, uint dwFlags, [Out, MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpExeName, ref uint lpdwSize);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        //[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        //[SuppressUnmanagedCodeSecurity]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool CloseHandle(IntPtr hObject);
 
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
@@ -863,12 +991,6 @@ namespace VolumeBalancer
         const int MOD_SHIFT = 0x0004;
         const int MOD_WIN = 0x0008;
         const int WM_HOTKEY = 0x0312;
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out uint ProcessId);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
 
         #endregion
 

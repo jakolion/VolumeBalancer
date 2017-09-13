@@ -13,6 +13,8 @@ namespace VolumeBalancer
     {
         private static string _mainFocusApplication;
         private static uint _balancePosition;
+        private static string _trayIcon;
+        private static bool _balanceSystemSound;
         private static Hotkey _hotkeyIncreaseFocusApplicationVolume;
         private static Hotkey _hotkeyIncreaseOtherApplicationVolume;
         private static Hotkey _hotkeyResetBalance;
@@ -25,8 +27,6 @@ namespace VolumeBalancer
         {
             return _mainFocusApplication;
         }
-
-
         public static void setMainFocusApplication(string mainFocusApplication)
         {
             _mainFocusApplication = mainFocusApplication;
@@ -39,8 +39,6 @@ namespace VolumeBalancer
         {
             return _balancePosition;
         }
-
-
         public static void setBalancePosition(uint balancePosition)
         {
             _balancePosition = balancePosition;
@@ -49,12 +47,34 @@ namespace VolumeBalancer
         }
 
 
+        public static string getTrayIcon()
+        {
+            return _trayIcon;
+        }
+        public static void setTrayIcon(string trayIcon)
+        {
+            _trayIcon = trayIcon;
+            Properties.Settings.Default.trayIcon = trayIcon;
+            Properties.Settings.Default.Save();
+        }
+
+
+        public static bool getBalanceSystemSound()
+        {
+            return _balanceSystemSound;
+        }
+        public static void setBalanceSystemSound(bool balanceSystemSound)
+        {
+            _balanceSystemSound = balanceSystemSound;
+            Properties.Settings.Default.balanceSystemSound = balanceSystemSound;
+            Properties.Settings.Default.Save();
+        }
+
+
         public static Hotkey getHotkeyIncreaseFocusApplicationVolume()
         {
             return _hotkeyIncreaseFocusApplicationVolume;
         }
-
-
         public static void setHotkeyIncreaseFocusApplicationVolume(Hotkey hotkey)
         {
             _hotkeyIncreaseFocusApplicationVolume = hotkey;
@@ -67,8 +87,6 @@ namespace VolumeBalancer
         {
             return _hotkeyIncreaseOtherApplicationVolume;
         }
-
-
         public static void setHotkeyIncreaseOtherApplicationVolume(Hotkey hotkey)
         {
             _hotkeyIncreaseOtherApplicationVolume = hotkey;
@@ -81,8 +99,6 @@ namespace VolumeBalancer
         {
             return _hotkeyResetBalance;
         }
-
-
         public static void setHotkeyResetBalance(Hotkey hotkey)
         {
             _hotkeyResetBalance = hotkey;
@@ -95,8 +111,6 @@ namespace VolumeBalancer
         {
             return _hotkeyActivateMainFocusApplication;
         }
-
-
         public static void setHotkeyActivateMainFocusApplication(Hotkey hotkey)
         {
             _hotkeyActivateMainFocusApplication = hotkey;
@@ -109,8 +123,6 @@ namespace VolumeBalancer
         {
             return _hotkeyActivateTemporaryFocusApplication;
         }
-
-
         public static void setHotkeyActivateTemporaryFocusApplication(Hotkey hotkey)
         {
             _hotkeyActivateTemporaryFocusApplication = hotkey;
@@ -123,8 +135,6 @@ namespace VolumeBalancer
         {
             return _hotkeyResetAllVolumes;
         }
-
-
         public static void setHotkeyResetAllVolumes(Hotkey hotkey)
         {
             _hotkeyResetAllVolumes = hotkey;
@@ -137,6 +147,8 @@ namespace VolumeBalancer
         {
             _mainFocusApplication = Properties.Settings.Default.mainFocusApplication;
             _balancePosition = Properties.Settings.Default.balancePosition;
+            _trayIcon = Properties.Settings.Default.trayIcon;
+            _balanceSystemSound = Properties.Settings.Default.balanceSystemSound;
             _hotkeyIncreaseFocusApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseFocusApplicationVolume);
             _hotkeyIncreaseOtherApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseOtherApplicationVolume);
             _hotkeyResetBalance = StringToHotkey(Properties.Settings.Default.hotkeyResetBalance);
