@@ -58,7 +58,7 @@
             this.labelTemporaryFocusApplication = new System.Windows.Forms.Label();
             this.textBoxTemporaryFocusApplication = new System.Windows.Forms.TextBox();
             this.groupBoxApplications = new System.Windows.Forms.GroupBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.checkBoxBalanceSystemSounds = new System.Windows.Forms.CheckBox();
             this.groupBoxTrayIconColor = new System.Windows.Forms.GroupBox();
             this.radioButtonTrayIconColorWhite = new System.Windows.Forms.RadioButton();
             this.radioButtonTrayIconColorGrey = new System.Windows.Forms.RadioButton();
@@ -361,7 +361,7 @@
             // 
             // groupBoxApplications
             // 
-            this.groupBoxApplications.Controls.Add(this.checkBox1);
+            this.groupBoxApplications.Controls.Add(this.checkBoxBalanceSystemSounds);
             this.groupBoxApplications.Controls.Add(this.labelMainFocusApplication);
             this.groupBoxApplications.Controls.Add(this.textBoxTemporaryFocusApplication);
             this.groupBoxApplications.Controls.Add(this.comboAudioApplications);
@@ -377,16 +377,17 @@
             this.groupBoxApplications.TabStop = false;
             this.groupBoxApplications.Text = "Applications";
             // 
-            // checkBox1
+            // checkBoxBalanceSystemSounds
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(139, 123);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(141, 17);
-            this.checkBox1.TabIndex = 7;
-            this.checkBox1.Text = "Balance System Sounds";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBoxBalanceSystemSounds.AutoSize = true;
+            this.checkBoxBalanceSystemSounds.Location = new System.Drawing.Point(139, 123);
+            this.checkBoxBalanceSystemSounds.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
+            this.checkBoxBalanceSystemSounds.Name = "checkBoxBalanceSystemSounds";
+            this.checkBoxBalanceSystemSounds.Size = new System.Drawing.Size(141, 17);
+            this.checkBoxBalanceSystemSounds.TabIndex = 7;
+            this.checkBoxBalanceSystemSounds.Text = "Balance System Sounds";
+            this.checkBoxBalanceSystemSounds.UseVisualStyleBackColor = true;
+            this.checkBoxBalanceSystemSounds.CheckedChanged += new System.EventHandler(this.checkBoxBalanceSystemSounds_CheckedChanged);
             // 
             // groupBoxTrayIconColor
             // 
@@ -540,7 +541,7 @@
         private System.Windows.Forms.TextBox textBoxHotkeyActivateMainFocusApplication;
         private System.Windows.Forms.GroupBox groupBoxApplications;
         private System.Windows.Forms.GroupBox groupBoxTrayIconColor;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox checkBoxBalanceSystemSounds;
         private System.Windows.Forms.GroupBox groupBoxAutostart;
         private System.Windows.Forms.RadioButton radioButtonAutostartDisabled;
         private System.Windows.Forms.RadioButton radioButtonAutostartEnabled;

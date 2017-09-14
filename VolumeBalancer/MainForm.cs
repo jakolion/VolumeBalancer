@@ -50,7 +50,7 @@ namespace VolumeBalancer
 
             // create a tray menu
             ContextMenu trayMenu = new ContextMenu();
-            MenuItem version = new MenuItem("Version " + Application.ProductVersion);
+            MenuItem version = new MenuItem(Application.ProductName + " " + GetVersion());
             version.Enabled = false;
             trayMenu.MenuItems.Add(version);
             trayMenu.MenuItems.Add("Configuration ...", OnTrayMenuConfigureClicked);
@@ -74,6 +74,9 @@ namespace VolumeBalancer
 
             // pre-set the audio application drop down list
             UpdateDropDownListAudioApplications();
+
+            // set checkbox for balancing system sound
+            checkBoxBalanceSystemSounds.Checked = UserSettings.getBalanceSystemSound();
 
             // set the balance
             trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
@@ -189,7 +192,8 @@ namespace VolumeBalancer
                 {
                     if (session.IsSystemSoundsSession)
                     {
-                        _audioAppList.Add(new AudioApp(session, "System Sound"));
+                        if (UserSettings.getBalanceSystemSound())
+                            _audioAppList.Add(new AudioApp(session, "System Sound"));
                     }
                     else
                     {
@@ -217,7 +221,7 @@ namespace VolumeBalancer
             // update temp focus application text box
             UpdateTempFocusApplicationTextBox();
 
-            // update GUI
+            // update balance slider
             UpdateBalanceSlider();
         }
 
@@ -225,9 +229,22 @@ namespace VolumeBalancer
         // update drop down list with audio applications
         private void UpdateDropDownListAudioApplications()
         {
+            // create new audio application list without system sound
+            List<string> audioAppList = new List<string>();
+
+            // loop through audio applications
+            for (int i = 0; i < _audioAppList.Count; i++)
+            {
+                if (!_audioAppList[i].session.IsSystemSoundsSession)
+                {
+                    audioAppList.Add(_audioAppList[i].ToString());
+                }
+            }
+
+            // build combo box
             comboAudioApplications.Items.Clear();
             comboAudioApplications.Sorted = true;
-            comboAudioApplications.Items.AddRange(_audioAppList.ToArray());
+            comboAudioApplications.Items.AddRange(audioAppList.ToArray());
             comboAudioApplications.Sorted = false;
             comboAudioApplications.Items.Insert(0, "Select a running audio application");
             comboAudioApplications.SelectedIndex = 0;
@@ -490,7 +507,7 @@ namespace VolumeBalancer
             // check if focus application is running
             if (AudioApplicationIsRunning(_currentFocusApplication))
             {
-                // check if only the focus aplication is running
+                // check if only the focus application is running
                 if (_audioAppList.Count == 1)
                 {
                     // focus application is the only audio application running
@@ -543,19 +560,30 @@ namespace VolumeBalancer
                 }
                 else
                 {
-                    // focus application is not running
+                    // check if no audio application is running
+                    if (_audioAppList.Count == 0)
+                    {
+                        // disable balance group
+                        groupBoxBalance.Enabled = false;
+                    }
+                    else
+                    {
+                        // one or more audio applications running
+                        // focus application is not running
 
-                    // disable label other
-                    labelBalanceOtherApplications.Enabled = false;
+                        // disable label other
+                        labelBalanceOtherApplications.Enabled = false;
 
-                    // enable label focus
-                    labelBalanceFocusApplication.Enabled = true;
+                        // enable label focus
+                        labelBalanceFocusApplication.Enabled = true;
 
-                    // enable balance group
-                    groupBoxBalance.Enabled = true;
+                        // enable balance group
+                        groupBoxBalance.Enabled = true;
 
-                    // so the slider can only be moved to the left side
-                    trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
+                        // so the slider can only be moved to the left side
+                        trackBarBalance.Value = (int)Math.Round((trackBarBalance.Maximum / 2) * highestOtherApplicationVolume);
+                    }
+
                 }
             }
         }
@@ -650,6 +678,24 @@ namespace VolumeBalancer
                 System.Threading.Thread.Sleep(100);
             }
         }
+
+
+        // get version
+        private string GetVersion()
+        {
+            string version = Application.ProductVersion;
+            char charToFind = '.';
+            int first = version.IndexOf(charToFind);
+            if (first < 0)
+                return version;
+
+            int second = version.IndexOf(charToFind, first + 1);
+            if (second < 0)
+                return version;
+
+            return version.Substring(0, second);
+        }
+
 
         #endregion
 
@@ -893,9 +939,7 @@ namespace VolumeBalancer
         {
             RadioButton rb = (RadioButton)sender;
             if (rb.Checked)
-            {
                 EnableAutostart();
-            }
         }
             
 
@@ -903,9 +947,14 @@ namespace VolumeBalancer
         {
             RadioButton rb = (RadioButton)sender;
             if (rb.Checked)
-            {
                 DisableAutostart();
-            }
+        }
+
+
+        private void checkBoxBalanceSystemSounds_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox cb = (CheckBox)sender;
+            UserSettings.setBalanceSystemSound(cb.Checked);
         }
 
 
