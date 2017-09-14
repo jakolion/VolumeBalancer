@@ -134,18 +134,6 @@ namespace VolumeBalancer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool autostart {
-            get {
-                return ((bool)(this["autostart"]));
-            }
-            set {
-                this["autostart"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool balanceSystemSound {
             get {
                 return ((bool)(this["balanceSystemSound"]));
