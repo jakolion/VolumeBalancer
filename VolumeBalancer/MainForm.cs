@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -41,6 +42,10 @@ namespace VolumeBalancer
         public MainForm()
         {
             InitializeComponent();
+
+            // set language to English/US
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
             // read user settings
             UserSettings.readSettings();
