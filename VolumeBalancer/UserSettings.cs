@@ -106,11 +106,11 @@ namespace VolumeBalancer
         }
 
 
-        public static Hotkey getHotkeyActivateTemporaryFocusApplication()
+        public static Hotkey getHotkeySetAndActivateTemporaryFocusApplication()
         {
             return _hotkeyActivateTemporaryFocusApplication;
         }
-        public static void setHotkeyActivateTemporaryFocusApplication(Hotkey hotkey)
+        public static void setHotkeySetAndActivateTemporaryFocusApplication(Hotkey hotkey)
         {
             _hotkeyActivateTemporaryFocusApplication = hotkey;
             Properties.Settings.Default.hotkeyActivateTemporaryFocusApplication = HotkeyToString(hotkey);

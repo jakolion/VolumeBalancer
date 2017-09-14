@@ -17,7 +17,8 @@ namespace VolumeBalancer
 {
     public partial class MainForm : Form, IAudioSessionEventsHandler
     {
-        private NotifyIcon trayIcon;
+        private NotifyIcon _trayIcon;
+        private List<HotkeyListElement> _hotkeyList = new List<HotkeyListElement>();
         private List<AudioApp> _audioAppList = new List<AudioApp>();
         private string _currentFocusApplication;
         private bool _guiUpdateByEventIsRunning = false;
@@ -31,14 +32,7 @@ namespace VolumeBalancer
         const string TRAYICON_BLACK = "iconBlack";
         const string TRAYICON_WHITE = "iconWhite";
         const string TRAYICON_GREY = "iconGrey";
-
-        const int HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME = 1;
-        const int HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME = 2;
-        const int HOTKEY_RESET_BALANCE = 3;
-        const int HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION = 4;
-        const int HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION = 5;
-        const int HOTKEY_RESET_ALL_VOLUMES = 6;
-
+        
 
         public MainForm()
         {
@@ -64,15 +58,15 @@ namespace VolumeBalancer
             trayMenu.MenuItems.Add("Exit", OnTrayMenuExitClicked);
 
             // create a tray icon
-            trayIcon = new NotifyIcon();
-            trayIcon.Text = Application.ProductName;
+            _trayIcon = new NotifyIcon();
+            _trayIcon.Text = Application.ProductName;
             SetTrayIcon(UserSettings.getTrayIcon());
 
             // add tray menu to icon
-            trayIcon.ContextMenu = trayMenu;
-            trayIcon.Visible = true;
-            trayIcon.MouseClick += OnTrayIconClicked;
-            trayIcon.MouseDoubleClick += OnTrayIconClicked;
+            _trayIcon.ContextMenu = trayMenu;
+            _trayIcon.Visible = true;
+            _trayIcon.MouseClick += OnTrayIconClicked;
+            _trayIcon.MouseDoubleClick += OnTrayIconClicked;
 
             // set the focus application
             _currentFocusApplication = UserSettings.getMainFocusApplication();
@@ -84,7 +78,8 @@ namespace VolumeBalancer
             // set checkbox for balancing system sound
             checkBoxBalanceSystemSounds.Checked = UserSettings.getBalanceSystemSound();
 
-            // set the hotkeys
+            // define and set the hotkeys
+            DefineHotkeys();
             SetAllHotkeys();
 
             // start thread for polling audio applications
@@ -108,7 +103,7 @@ namespace VolumeBalancer
             if (Properties.Resources.ResourceManager.GetObject(trayIconName) == null)
                 trayIconName = TRAYICON_BLUE;
 
-            trayIcon.Icon = (Icon)Properties.Resources.ResourceManager.GetObject(trayIconName);
+            _trayIcon.Icon = (Icon)Properties.Resources.ResourceManager.GetObject(trayIconName);
 
             // select radio button
             switch (trayIconName)
@@ -258,26 +253,76 @@ namespace VolumeBalancer
         }
 
 
+        // define hotkeys
+        private void DefineHotkeys()
+        {
+            int i = 1;
+
+            _hotkeyList.Add(new HotkeyListElement(
+                i++,
+                textBoxHotkeyIncreaseFocusApplicationVolume,
+                labelHotkeyIncreaseFocusApplicationVolume,
+                UserSettings.getHotkeyIncreaseFocusApplicationVolume,
+                UserSettings.setHotkeyIncreaseFocusApplicationVolume,
+                IncreaseFocusApplicationVolume
+                ));
+
+            _hotkeyList.Add(new HotkeyListElement(
+                i++,
+                textBoxHotkeyIncreaseOtherApplicationVolume,
+                labelHotkeyIncreaseOtherApplicationsVolume,
+                UserSettings.getHotkeyIncreaseOtherApplicationVolume,
+                UserSettings.setHotkeyIncreaseOtherApplicationVolume,
+                IncreaseOtherApplicationVolume
+                ));
+
+            _hotkeyList.Add(new HotkeyListElement(
+                i++,
+                textBoxHotkeyResetBalance,
+                labelHotkeyResetBalance,
+                UserSettings.getHotkeyResetBalance,
+                UserSettings.setHotkeyResetBalance,
+                ResetBalance
+                ));
+
+            _hotkeyList.Add(new HotkeyListElement(
+                i++,
+                textBoxHotkeyActivateMainFocusApplication,
+                labelHotkeyActivateMainFocusApplication,
+                UserSettings.getHotkeyActivateMainFocusApplication,
+                UserSettings.setHotkeyActivateMainFocusApplication,
+                ActivateMainFocusApplication
+                ));
+
+            _hotkeyList.Add(new HotkeyListElement(
+                i++,
+                textBoxHotkeySetAndActivateTemporaryFocusApplication,
+                labelHotkeySetAndActivateTemporaryFocusApplication,
+                UserSettings.getHotkeySetAndActivateTemporaryFocusApplication,
+                UserSettings.setHotkeySetAndActivateTemporaryFocusApplication,
+                SetAndActivateTemporaryFocusApplication
+                ));
+
+            _hotkeyList.Add(new HotkeyListElement(
+                i++,
+                textBoxHotkeyResetAllVolumes,
+                labelHotkeyResetAllVolumes,
+                UserSettings.getHotkeyResetAllVolumes,
+                UserSettings.setHotkeyResetAllVolumes,
+                ResetAllVolumes
+                ));
+
+        }
+
+
         // set all hotkeys
         private void SetAllHotkeys()
         {
-            SetHotkey(HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseFocusApplicationVolume());
-            SetHotkeyTextBox(textBoxHotkeyIncreaseFocusApplicationVolume, UserSettings.getHotkeyIncreaseFocusApplicationVolume());
-
-            SetHotkey(HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME, UserSettings.getHotkeyIncreaseOtherApplicationVolume());
-            SetHotkeyTextBox(textBoxHotkeyIncreaseOtherApplicationVolume, UserSettings.getHotkeyIncreaseOtherApplicationVolume());
-
-            SetHotkey(HOTKEY_RESET_BALANCE, UserSettings.getHotkeyResetBalance());
-            SetHotkeyTextBox(textBoxHotkeyResetBalance, UserSettings.getHotkeyResetBalance());
-
-            SetHotkey(HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION, UserSettings.getHotkeyActivateMainFocusApplication());
-            SetHotkeyTextBox(textBoxHotkeyActivateMainFocusApplication, UserSettings.getHotkeyActivateMainFocusApplication());
-
-            SetHotkey(HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION, UserSettings.getHotkeyActivateTemporaryFocusApplication());
-            SetHotkeyTextBox(textBoxHotkeyActivateTemporaryFocusApplication, UserSettings.getHotkeyActivateTemporaryFocusApplication());
-
-            SetHotkey(HOTKEY_RESET_ALL_VOLUMES, UserSettings.getHotkeyResetAllVolumes());
-            SetHotkeyTextBox(textBoxHotkeyResetAllVolumes, UserSettings.getHotkeyResetAllVolumes());
+            foreach (HotkeyListElement hle in _hotkeyList)
+            {
+                SetHotkey(hle.id, hle.getHotkey());
+                SetHotkeyTextBox(hle.textBox, hle.getHotkey());
+            }
         }
 
 
@@ -325,43 +370,40 @@ namespace VolumeBalancer
         // save a specific hotkey in user settings
         private void SaveHotkeyInUserSettings(int hotkeyId, Hotkey hotkey)
         {
-            switch (hotkeyId)
+            foreach (HotkeyListElement hle in _hotkeyList)
             {
-                case HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME:
-                    UserSettings.setHotkeyIncreaseFocusApplicationVolume(hotkey);
-                    break;
-
-                case HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME:
-                    UserSettings.setHotkeyIncreaseOtherApplicationVolume(hotkey);
-                    break;
-
-                case HOTKEY_RESET_BALANCE:
-                    UserSettings.setHotkeyResetBalance(hotkey);
-                    break;
-
-                case HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION:
-                    UserSettings.setHotkeyActivateMainFocusApplication(hotkey);
-                    break;
-
-                case HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION:
-                    UserSettings.setHotkeyActivateTemporaryFocusApplication(hotkey);
-                    break;
-
-                case HOTKEY_RESET_ALL_VOLUMES:
-                    UserSettings.setHotkeyResetAllVolumes(hotkey);
-                    break;
+                if (hotkeyId == hle.id)
+                {
+                    hle.setHotkey(hotkey);
+                    return;
+                }
             }
         }
 
 
         // records an hotkey pressed on textbox
-        private void HotkeyPressed(TextBox textBox, KeyEventArgs e, int hotkeyId)
+        private void HotkeyInTextBoxPressed(TextBox textBox, KeyEventArgs e)
         {
             // get modifier keys
             Keys modifierKeys = e.Modifiers;
 
             // get non-modifier keys
             Keys pressedKey = e.KeyData ^ modifierKeys;
+
+            // get hotkey id
+            int hotkeyId = -1;
+            foreach (HotkeyListElement hle in _hotkeyList)
+            {
+                if (textBox == hle.textBox)
+                {
+                    hotkeyId = hle.id;
+                    break;
+                }
+            }
+
+            // check if hotkey id was found
+            if (hotkeyId < 0)
+                return;
 
             if (modifierKeys == Keys.None && (pressedKey == Keys.Back || pressedKey == Keys.Delete))
             {
@@ -405,6 +447,18 @@ namespace VolumeBalancer
 
             e.Handled = true;
             e.SuppressKeyPress = true;
+        }
+
+
+        // checks if a hotkey text field is selected
+        private bool HotkeyTextBoxIsSelected()
+        {
+            foreach (HotkeyListElement hle in _hotkeyList)
+            {
+                if (hle.textBox.Focused)
+                    return true;
+            }
+            return false;
         }
 
 
@@ -485,7 +539,7 @@ namespace VolumeBalancer
 
 
         // activate temporary focus application
-        private void ActivateTemporaryFocusApplication()
+        private void SetAndActivateTemporaryFocusApplication()
         {
             // set new focus application to topmost application
             string processPath = Helper.GetProcessPath(Helper.GetTopmostProcessId());
@@ -648,7 +702,7 @@ namespace VolumeBalancer
 
 
         // reset all audio application volumes
-        private void ResetAllAudioApplicationVolume()
+        private void ResetAllVolumes()
         {
             // loop through audio applications and set session volume
             for (int i = 0; i < _audioAppList.Count; i++)
@@ -730,7 +784,7 @@ namespace VolumeBalancer
             updateApplicationListThreadAbort = true;
 
             // release the icon resource
-            trayIcon.Dispose();
+            _trayIcon.Dispose();
 
             // release form
             Dispose();
@@ -871,37 +925,37 @@ namespace VolumeBalancer
 
         private void textBoxShortcutIncreaseFocusApplicationVolume_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME);
+            HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
 
         private void textBoxHotkeyIncreaseOtherApplicationsVolume_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME);
+            HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
 
         private void textBoxHotkeyResetBalance_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_RESET_BALANCE);
+            HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
 
         private void textBoxHotkeyActivateMainFocusApplication_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION);
+            HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
 
-        private void textBoxHotkeyActivateTemporaryFocusApplication_KeyDown(object sender, KeyEventArgs e)
+        private void textBoxHotkeySetAndActivateTemporaryFocusApplication_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION);
+            HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
 
         private void textBoxHotkeyResetAllVolumes_KeyDown(object sender, KeyEventArgs e)
         {
-            HotkeyPressed((TextBox)sender, e, HOTKEY_RESET_ALL_VOLUMES);
+            HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
 
@@ -1003,31 +1057,17 @@ namespace VolumeBalancer
         {
             if (m.Msg == WM_HOTKEY)
             {
-                switch ((int)m.WParam)
+                // check if a text box for entering hotkeys is selected
+                if (HotkeyTextBoxIsSelected())
+                    return;
+
+                foreach (HotkeyListElement hle in _hotkeyList)
                 {
-                    case HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME:
-                        IncreaseFocusApplicationVolume();
-                        break;
-
-                    case HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME:
-                        IncreaseOtherApplicationVolume();
-                        break;
-
-                    case HOTKEY_RESET_BALANCE:
-                        ResetBalance();
-                        break;
-
-                    case HOTKEY_ACTIVATE_MAIN_FOCUS_APPLICATION:
-                        ActivateMainFocusApplication();
-                        break;
-
-                    case HOTKEY_ACTIVATE_TEMPORARY_FOCUS_APPLICATION:
-                        ActivateTemporaryFocusApplication();
-                        break;
-
-                    case HOTKEY_RESET_ALL_VOLUMES:
-                        ResetAllAudioApplicationVolume();
-                        break;
+                    if ((int)m.WParam == hle.id)
+                    {
+                        hle.executeHotkey();
+                        return;
+                    }
                 }
             }
             base.WndProc(ref m);
