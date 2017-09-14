@@ -399,7 +399,7 @@
             this.groupBoxTrayIconColor.Name = "groupBoxTrayIconColor";
             this.groupBoxTrayIconColor.Padding = new System.Windows.Forms.Padding(13);
             this.groupBoxTrayIconColor.Size = new System.Drawing.Size(195, 105);
-            this.groupBoxTrayIconColor.TabIndex = 3;
+            this.groupBoxTrayIconColor.TabIndex = 4;
             this.groupBoxTrayIconColor.TabStop = false;
             this.groupBoxTrayIconColor.Text = "Tray Icon Color";
             // 
@@ -447,7 +447,7 @@
             this.groupBoxAutostart.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxAutostart.Name = "groupBoxAutostart";
             this.groupBoxAutostart.Size = new System.Drawing.Size(195, 82);
-            this.groupBoxAutostart.TabIndex = 4;
+            this.groupBoxAutostart.TabIndex = 3;
             this.groupBoxAutostart.TabStop = false;
             this.groupBoxAutostart.Text = "Autostart";
             // 
