@@ -12,7 +12,6 @@ namespace VolumeBalancer
     static class UserSettings
     {
         private static string _mainFocusApplication;
-        private static uint _balancePosition;
         private static string _trayIcon;
         private static bool _balanceSystemSound;
         private static Hotkey _hotkeyIncreaseFocusApplicationVolume;
@@ -31,18 +30,6 @@ namespace VolumeBalancer
         {
             _mainFocusApplication = mainFocusApplication;
             Properties.Settings.Default.mainFocusApplication = mainFocusApplication;
-            Properties.Settings.Default.Save();
-        }
-
-
-        public static uint getBalancePosition()
-        {
-            return _balancePosition;
-        }
-        public static void setBalancePosition(uint balancePosition)
-        {
-            _balancePosition = balancePosition;
-            Properties.Settings.Default.balancePosition = balancePosition;
             Properties.Settings.Default.Save();
         }
 
@@ -146,7 +133,6 @@ namespace VolumeBalancer
         public static void readSettings()
         {
             _mainFocusApplication = Properties.Settings.Default.mainFocusApplication;
-            _balancePosition = Properties.Settings.Default.balancePosition;
             _trayIcon = Properties.Settings.Default.trayIcon;
             _balanceSystemSound = Properties.Settings.Default.balanceSystemSound;
             _hotkeyIncreaseFocusApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseFocusApplicationVolume);

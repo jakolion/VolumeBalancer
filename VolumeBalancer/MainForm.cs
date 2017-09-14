@@ -84,9 +84,6 @@ namespace VolumeBalancer
             // set checkbox for balancing system sound
             checkBoxBalanceSystemSounds.Checked = UserSettings.getBalanceSystemSound();
 
-            // set the balance
-            trackBarBalance.Value = (int)(trackBarBalance.Maximum / 100 * UserSettings.getBalancePosition());
-
             // set the hotkeys
             SetAllHotkeys();
 
@@ -848,10 +845,6 @@ namespace VolumeBalancer
                     }
                 }
             }
-
-            // save new position of balance in user settings
-            uint balancePosition = (uint)(100f / trackBarBalance.Maximum * trackBarBalance.Value);
-            UserSettings.setBalancePosition(balancePosition);
         }
 
 

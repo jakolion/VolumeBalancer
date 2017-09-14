@@ -37,18 +37,6 @@ namespace VolumeBalancer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public uint balancePosition {
-            get {
-                return ((uint)(this["balancePosition"]));
-            }
-            set {
-                this["balancePosition"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string hotkeyIncreaseFocusApplicationVolume {
             get {
