@@ -955,6 +955,7 @@ namespace VolumeBalancer
         {
             CheckBox cb = (CheckBox)sender;
             UserSettings.setBalanceSystemSound(cb.Checked);
+            UpdateApplicationList();
         }
 
 
