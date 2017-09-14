@@ -27,9 +27,10 @@ namespace VolumeBalancer
         const string AUTOSTART_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
         const string AUTOSTART_NAME = "VolumeBalancer";
 
+        const string TRAYICON_BLUE = "iconBlue";
         const string TRAYICON_BLACK = "iconBlack";
-        const string TRAYICON_GREY = "iconGrey";
         const string TRAYICON_WHITE = "iconWhite";
+        const string TRAYICON_GREY = "iconGrey";
 
         const int HOTKEY_INCREASE_FOCUS_APPLICATION_VOLUME = 1;
         const int HOTKEY_INCREASE_OTHER_APPLICATION_VOLUME = 2;
@@ -108,7 +109,7 @@ namespace VolumeBalancer
         private void SetTrayIcon(string trayIconName)
         {
             if (Properties.Resources.ResourceManager.GetObject(trayIconName) == null)
-                trayIconName = TRAYICON_GREY;
+                trayIconName = TRAYICON_BLUE;
 
             trayIcon.Icon = (Icon)Properties.Resources.ResourceManager.GetObject(trayIconName);
 
@@ -125,6 +126,10 @@ namespace VolumeBalancer
 
                 case TRAYICON_WHITE:
                     radioButtonTrayIconColorWhite.Select();
+                    break;
+
+                case TRAYICON_BLUE:
+                    radioButtonTrayIconColorBlue.Select();
                     break;
             }
         }
@@ -939,7 +944,18 @@ namespace VolumeBalancer
             }
         }
 
-        
+
+        private void radioButtonTrayIconColorBlue_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            if (rb.Checked)
+            {
+                UserSettings.setTrayIcon(TRAYICON_BLUE);
+                SetTrayIcon(TRAYICON_BLUE);
+            }
+        }
+
+
         private void checkBoxAutostart_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox cb = (CheckBox)sender;

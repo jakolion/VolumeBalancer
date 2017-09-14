@@ -60,6 +60,7 @@
             this.groupBoxApplications = new System.Windows.Forms.GroupBox();
             this.checkBoxBalanceSystemSounds = new System.Windows.Forms.CheckBox();
             this.groupBoxTrayIconColor = new System.Windows.Forms.GroupBox();
+            this.radioButtonTrayIconColorBlue = new System.Windows.Forms.RadioButton();
             this.radioButtonTrayIconColorWhite = new System.Windows.Forms.RadioButton();
             this.radioButtonTrayIconColorGrey = new System.Windows.Forms.RadioButton();
             this.radioButtonTrayIconColorBlack = new System.Windows.Forms.RadioButton();
@@ -227,7 +228,7 @@
             this.groupBoxHotkeys.Margin = new System.Windows.Forms.Padding(3, 10, 10, 3);
             this.groupBoxHotkeys.Name = "groupBoxHotkeys";
             this.groupBoxHotkeys.Padding = new System.Windows.Forms.Padding(13);
-            this.groupBoxHotkeys.Size = new System.Drawing.Size(394, 203);
+            this.groupBoxHotkeys.Size = new System.Drawing.Size(394, 228);
             this.groupBoxHotkeys.TabIndex = 2;
             this.groupBoxHotkeys.TabStop = false;
             this.groupBoxHotkeys.Text = "Hotkeys";
@@ -388,6 +389,7 @@
             // 
             // groupBoxTrayIconColor
             // 
+            this.groupBoxTrayIconColor.Controls.Add(this.radioButtonTrayIconColorBlue);
             this.groupBoxTrayIconColor.Controls.Add(this.radioButtonTrayIconColorWhite);
             this.groupBoxTrayIconColor.Controls.Add(this.radioButtonTrayIconColorGrey);
             this.groupBoxTrayIconColor.Controls.Add(this.radioButtonTrayIconColorBlack);
@@ -395,10 +397,22 @@
             this.groupBoxTrayIconColor.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxTrayIconColor.Name = "groupBoxTrayIconColor";
             this.groupBoxTrayIconColor.Padding = new System.Windows.Forms.Padding(13);
-            this.groupBoxTrayIconColor.Size = new System.Drawing.Size(195, 105);
+            this.groupBoxTrayIconColor.Size = new System.Drawing.Size(195, 130);
             this.groupBoxTrayIconColor.TabIndex = 3;
             this.groupBoxTrayIconColor.TabStop = false;
             this.groupBoxTrayIconColor.Text = "Tray Icon Color";
+            // 
+            // radioButtonTrayIconColorBlue
+            // 
+            this.radioButtonTrayIconColorBlue.AutoSize = true;
+            this.radioButtonTrayIconColorBlue.Location = new System.Drawing.Point(16, 29);
+            this.radioButtonTrayIconColorBlue.Name = "radioButtonTrayIconColorBlue";
+            this.radioButtonTrayIconColorBlue.Size = new System.Drawing.Size(46, 17);
+            this.radioButtonTrayIconColorBlue.TabIndex = 3;
+            this.radioButtonTrayIconColorBlue.TabStop = true;
+            this.radioButtonTrayIconColorBlue.Text = "Blue";
+            this.radioButtonTrayIconColorBlue.UseVisualStyleBackColor = true;
+            this.radioButtonTrayIconColorBlue.CheckedChanged += new System.EventHandler(this.radioButtonTrayIconColorBlue_CheckedChanged);
             // 
             // radioButtonTrayIconColorWhite
             // 
@@ -415,7 +429,7 @@
             // radioButtonTrayIconColorGrey
             // 
             this.radioButtonTrayIconColorGrey.AutoSize = true;
-            this.radioButtonTrayIconColorGrey.Location = new System.Drawing.Point(16, 52);
+            this.radioButtonTrayIconColorGrey.Location = new System.Drawing.Point(16, 97);
             this.radioButtonTrayIconColorGrey.Name = "radioButtonTrayIconColorGrey";
             this.radioButtonTrayIconColorGrey.Size = new System.Drawing.Size(47, 17);
             this.radioButtonTrayIconColorGrey.TabIndex = 1;
@@ -427,7 +441,7 @@
             // radioButtonTrayIconColorBlack
             // 
             this.radioButtonTrayIconColorBlack.AutoSize = true;
-            this.radioButtonTrayIconColorBlack.Location = new System.Drawing.Point(16, 29);
+            this.radioButtonTrayIconColorBlack.Location = new System.Drawing.Point(16, 52);
             this.radioButtonTrayIconColorBlack.Name = "radioButtonTrayIconColorBlack";
             this.radioButtonTrayIconColorBlack.Size = new System.Drawing.Size(52, 17);
             this.radioButtonTrayIconColorBlack.TabIndex = 0;
@@ -440,7 +454,7 @@
             // 
             this.groupBoxMisc.Controls.Add(this.checkBoxBalanceSystemSounds);
             this.groupBoxMisc.Controls.Add(this.checkBoxAutostart);
-            this.groupBoxMisc.Location = new System.Drawing.Point(423, 404);
+            this.groupBoxMisc.Location = new System.Drawing.Point(423, 429);
             this.groupBoxMisc.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxMisc.Name = "groupBoxMisc";
             this.groupBoxMisc.Padding = new System.Windows.Forms.Padding(13);
@@ -464,7 +478,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(634, 504);
+            this.ClientSize = new System.Drawing.Size(634, 529);
             this.Controls.Add(this.groupBoxMisc);
             this.Controls.Add(this.groupBoxTrayIconColor);
             this.Controls.Add(this.groupBoxApplications);
@@ -532,6 +546,7 @@
         private System.Windows.Forms.RadioButton radioButtonTrayIconColorWhite;
         private System.Windows.Forms.RadioButton radioButtonTrayIconColorGrey;
         private System.Windows.Forms.CheckBox checkBoxAutostart;
+        private System.Windows.Forms.RadioButton radioButtonTrayIconColorBlue;
     }
 }
 
