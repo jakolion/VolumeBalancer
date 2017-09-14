@@ -139,7 +139,7 @@ namespace VolumeBalancer
             // autostart path does not exist
             if (autostartPath == null)
             {
-                radioButtonAutostartDisabled.Select();
+                checkBoxAutostart.Checked = false;
                 return;
             }
 
@@ -151,7 +151,7 @@ namespace VolumeBalancer
                 Helper.RegistryWriteCurrentUser(AUTOSTART_PATH, AUTOSTART_NAME, currentPath);
             }
 
-            radioButtonAutostartEnabled.Select();
+            checkBoxAutostart.Checked = true;
         }
 
 
@@ -939,19 +939,13 @@ namespace VolumeBalancer
             }
         }
 
-
-        private void radioButtonAutostartEnabled_CheckedChanged(object sender, EventArgs e)
+        
+        private void checkBoxAutostart_CheckedChanged(object sender, EventArgs e)
         {
-            RadioButton rb = (RadioButton)sender;
-            if (rb.Checked)
+            CheckBox cb = (CheckBox)sender;
+            if (cb.Checked)
                 EnableAutostart();
-        }
-            
-
-        private void radioButtonAutostartDisabled_CheckedChanged(object sender, EventArgs e)
-        {
-            RadioButton rb = (RadioButton)sender;
-            if (rb.Checked)
+            else
                 DisableAutostart();
         }
 
