@@ -7,6 +7,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -22,8 +23,8 @@ namespace VolumeBalancer
         private List<AudioApp> _audioAppList = new List<AudioApp>();
         private string _currentFocusApplication;
         private bool _guiUpdateByEventIsRunning = false;
-        private Thread _updateApplicationListThread;
-        public bool updateApplicationListThreadAbort;
+        private System.Timers.Timer _highlightHotkeyResetTimer;
+        public bool abortAllThreads = false;
 
         const string AUTOSTART_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
         const string AUTOSTART_NAME = "VolumeBalancer";
@@ -32,7 +33,7 @@ namespace VolumeBalancer
         const string TRAYICON_BLACK = "iconBlack";
         const string TRAYICON_WHITE = "iconWhite";
         const string TRAYICON_GREY = "iconGrey";
-        
+
 
         public MainForm()
         {
@@ -82,12 +83,21 @@ namespace VolumeBalancer
             DefineHotkeys();
             SetAllHotkeys();
 
-            // start thread for polling audio applications
-            _updateApplicationListThread = new Thread(UpdateApplicationListJob);
-            _updateApplicationListThread.Start();
-
             // check autostart
             CheckAutostartStatus();
+
+            // start timer for polling audio applications
+            System.Timers.Timer updateApplicationListTimer = new System.Timers.Timer();
+            updateApplicationListTimer.Interval = 2000;
+            updateApplicationListTimer.Elapsed += new ElapsedEventHandler(UpdateApplicationListJob);
+            updateApplicationListTimer.AutoReset = true;
+            updateApplicationListTimer.Start();
+
+            // create timer for reseting the hotkey highlight
+            _highlightHotkeyResetTimer = new System.Timers.Timer();
+            _highlightHotkeyResetTimer.Interval = 3000;
+            _highlightHotkeyResetTimer.Elapsed += new ElapsedEventHandler(HighlightHotkeyReset);
+            _highlightHotkeyResetTimer.AutoReset = false;
 
             // show the GUI if the focus application is not saved in the user settings
             if (UserSettings.getMainFocusApplication() == "")
@@ -390,7 +400,7 @@ namespace VolumeBalancer
             // get non-modifier keys
             Keys pressedKey = e.KeyData ^ modifierKeys;
 
-            // get hotkey id
+            // get hotkey id via current text box
             int hotkeyId = -1;
             foreach (HotkeyListElement hle in _hotkeyList)
             {
@@ -450,15 +460,42 @@ namespace VolumeBalancer
         }
 
 
-        // checks if a hotkey text field is selected
-        private bool HotkeyTextBoxIsSelected()
+        // highlights a hotkey text box
+        private void HighlightHotkey(HotkeyListElement hle)
+        {
+            // reset all label and text box colors
+            foreach (HotkeyListElement hleSearch in _hotkeyList)
+            {
+                if (hleSearch.label.ForeColor != SystemColors.ControlText)
+                    hleSearch.label.ForeColor = SystemColors.ControlText;
+
+                if (hleSearch.textBox.ForeColor != SystemColors.ControlText)
+                    hleSearch.textBox.ForeColor = SystemColors.ControlText;
+            }
+
+            // highlight new label and textbox
+            hle.label.ForeColor = Color.Red;
+            // backcolor has to be set in order to change the forecolor in a readonly text box
+            hle.textBox.BackColor = SystemColors.Control;
+            hle.textBox.ForeColor = Color.Red;
+
+            // reset timer
+            _highlightHotkeyResetTimer.Stop();
+            _highlightHotkeyResetTimer.Start();
+        }
+
+
+        // reset hotkey label and text color
+        private void HighlightHotkeyReset(object source, ElapsedEventArgs e)
         {
             foreach (HotkeyListElement hle in _hotkeyList)
             {
-                if (hle.textBox.Focused)
-                    return true;
+                if (hle.label.ForeColor != SystemColors.ControlText)
+                    hle.label.ForeColor = SystemColors.ControlText;
+
+                if (hle.textBox.ForeColor != SystemColors.ControlText)
+                    hle.textBox.ForeColor = SystemColors.ControlText;
             }
-            return false;
         }
 
 
@@ -714,30 +751,17 @@ namespace VolumeBalancer
 
 
         // poll for new audio applications
-        private void UpdateApplicationListJob()
+        private void UpdateApplicationListJob(object source, ElapsedEventArgs e)
         {
-            const long DELAY = 2 * TimeSpan.TicksPerSecond; // 2 seconds
-            updateApplicationListThreadAbort = false;
-            long ticksTarget = DateTime.Now.Ticks;
-            long ticks;
-            while (!updateApplicationListThreadAbort)
+            try
             {
-                ticks = DateTime.Now.Ticks;
-                if (ticks >= ticksTarget)
+                this.BeginInvoke(new Action(delegate ()
                 {
-                    try
-                    {
-                        this.BeginInvoke(new Action(delegate ()
-                        {
-                            UpdateApplicationList();
-                        }));
-                    }
-                    catch { }
-                    ticksTarget = DateTime.Now.Ticks + DELAY;
-                    GC.Collect();
-                }
-                System.Threading.Thread.Sleep(100);
+                    UpdateApplicationList();
+                }));
             }
+            catch { }
+            GC.Collect();
         }
 
 
@@ -781,7 +805,7 @@ namespace VolumeBalancer
         private void OnTrayMenuExitClicked(object sender, EventArgs e)
         {
             // end thread
-            updateApplicationListThreadAbort = true;
+            abortAllThreads = true;
 
             // release the icon resource
             _trayIcon.Dispose();
@@ -1057,15 +1081,27 @@ namespace VolumeBalancer
         {
             if (m.Msg == WM_HOTKEY)
             {
-                // check if a text box for entering hotkeys is selected
-                if (HotkeyTextBoxIsSelected())
-                    return;
-
-                foreach (HotkeyListElement hle in _hotkeyList)
+                foreach (HotkeyListElement hlePressed in _hotkeyList)
                 {
-                    if ((int)m.WParam == hle.id)
+                    if ((int)m.WParam == hlePressed.id)
                     {
-                        hle.executeHotkey();
+                        // check if a hotkey text box is selected
+                        foreach (HotkeyListElement hleSelected in _hotkeyList)
+                        {
+                            if (hleSelected.textBox.Focused)
+                            {
+                                // check if the pressed hotkey equals the currently selected text box
+                                if (hlePressed.id == hleSelected.id)
+                                    return;
+
+                                // otherwise mark the text box field
+                                HighlightHotkey(hlePressed);
+                                return;
+                            }
+                        }
+
+                        // no hotkey text box selected, we can execute the command
+                        hlePressed.executeHotkey();
                         return;
                     }
                 }
