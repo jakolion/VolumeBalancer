@@ -29,7 +29,7 @@ namespace VolumeBalancer
         const string AUTOSTART_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
         const string AUTOSTART_NAME = "VolumeBalancer";
         
-        const string TRAYICON_NAME = "icon_128";
+        const string TRAYICON_NAME = "iconBlackPng";
 
 
         public MainForm()
@@ -46,6 +46,9 @@ namespace VolumeBalancer
             // we need initialize the form before being able to interact with the controls
             Hide();
 
+            // set form icon
+            SetFormIcon(SystemColors.Highlight);
+
             // create a tray menu
             ContextMenu trayMenu = new ContextMenu();
             MenuItem version = new MenuItem(Application.ProductName + " " + GetVersion());
@@ -58,7 +61,6 @@ namespace VolumeBalancer
             // create a tray icon
             _trayIcon = new NotifyIcon();
             _trayIcon.Text = Application.ProductName;
-            SetTrayIcon(UserSettings.getTrayIconColor());
 
             // add tray menu to icon
             _trayIcon.ContextMenu = trayMenu;
@@ -73,7 +75,7 @@ namespace VolumeBalancer
             // pre-set the audio application drop down list
             UpdateDropDownListAudioApplications();
 
-            // set Color based on configuration
+            // set color of color panel based on user settings
             panelTrayIconColor.BackColor = UserSettings.getTrayIconColor();
 
             // set checkbox for balancing system sound
@@ -86,7 +88,8 @@ namespace VolumeBalancer
             // check autostart
             CheckAutostartStatus();
 
-            // start timer for polling audio applications
+            // update application list and start timer for polling audio applications
+            UpdateApplicationList();
             System.Timers.Timer updateApplicationListTimer = new System.Timers.Timer();
             updateApplicationListTimer.Interval = 2000;
             updateApplicationListTimer.Elapsed += new ElapsedEventHandler(UpdateApplicationListJob);
@@ -111,7 +114,13 @@ namespace VolumeBalancer
         private void SetTrayIcon(Color color)
         {
             _trayIcon.Icon = Helper.SetIconColor((Bitmap)Properties.Resources.ResourceManager.GetObject(TRAYICON_NAME), color);
-            
+        }
+
+
+        // set form icon
+        private void SetFormIcon(Color color)
+        {
+            Icon = Helper.SetIconColor((Bitmap)Properties.Resources.ResourceManager.GetObject(TRAYICON_NAME), color);
         }
 
 
@@ -960,13 +969,15 @@ namespace VolumeBalancer
             HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
-        private void panelTrayIconColor_MouseClick(object sender, MouseEventArgs e)
+
+        private void panelTrayIconColor_Click(object sender, EventArgs e)
         {
             ColorDialog colorDialog = new ColorDialog();
 
             if (colorDialog.ShowDialog() == DialogResult.OK)
                 ((Panel)sender).BackColor = colorDialog.Color;
         }
+
 
         private void panelTrayIconColor_BackColorChanged(object sender, EventArgs e)
         {
@@ -975,6 +986,7 @@ namespace VolumeBalancer
             UserSettings.setTrayIconColor(panelTemp.BackColor);
             SetTrayIcon(panelTemp.BackColor);
         }
+
 
         private void checkBoxAutostart_CheckedChanged(object sender, EventArgs e)
         {

@@ -24,7 +24,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="trayIcon" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Silver</Value>
+      <Value Profile="(Default)">Highlight</Value>
     </Setting>
     <Setting Name="balanceSystemSound" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>

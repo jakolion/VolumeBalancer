@@ -109,7 +109,7 @@ namespace VolumeBalancer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Silver")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Highlight")]
         public global::System.Drawing.Color trayIcon {
             get {
                 return ((global::System.Drawing.Color)(this["trayIcon"]));
