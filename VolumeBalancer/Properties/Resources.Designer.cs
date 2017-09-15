@@ -61,42 +61,12 @@ namespace VolumeBalancer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Icon iconBlack {
+        internal static System.Drawing.Bitmap icon_128 {
             get {
-                object obj = ResourceManager.GetObject("iconBlack", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon iconBlue {
-            get {
-                object obj = ResourceManager.GetObject("iconBlue", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon iconGrey {
-            get {
-                object obj = ResourceManager.GetObject("iconGrey", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon iconWhite {
-            get {
-                object obj = ResourceManager.GetObject("iconWhite", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                object obj = ResourceManager.GetObject("icon_128", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

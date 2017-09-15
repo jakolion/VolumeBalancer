@@ -6,11 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 namespace VolumeBalancer
 {
     static class Helper
     {
+        [DllImport("user32.dll", CharSet = CharSet.None, ExactSpelling = false)]
+        private static extern bool DestroyIcon(IntPtr handle);
+
         // checks if a process is running
         static public bool ProcessExists(uint processId)
         {
@@ -25,6 +29,27 @@ namespace VolumeBalancer
             }
         }
 
+        // Change non-transparent pixels of Bitmap to Color
+        static public Icon SetIconColor(Bitmap bmpTemp, Color targetColor)
+        {
+            for (int i = 0; i < bmpTemp.Width; i++)
+            {
+                for (int j = 0; j < bmpTemp.Height; j++)
+                {
+                    if (bmpTemp.GetPixel(i, j).A > 10)
+                    {
+                        bmpTemp.SetPixel(i, j, targetColor);
+                    }
+                }
+            }
+
+            //Icon created by GetHicon() must be Destroyed due to handle leakage!!!
+            Icon tmpIcon = Icon.FromHandle(bmpTemp.GetHicon());
+            Icon returnIcon = tmpIcon.Clone() as Icon;
+            DestroyIcon(tmpIcon.Handle); 
+
+            return returnIcon;
+        }
 
         // get path of process
         static public string GetProcessPath(uint processId)

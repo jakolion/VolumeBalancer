@@ -28,11 +28,8 @@ namespace VolumeBalancer
 
         const string AUTOSTART_PATH = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
         const string AUTOSTART_NAME = "VolumeBalancer";
-
-        const string TRAYICON_BLUE = "iconBlue";
-        const string TRAYICON_BLACK = "iconBlack";
-        const string TRAYICON_WHITE = "iconWhite";
-        const string TRAYICON_GREY = "iconGrey";
+        
+        const string TRAYICON_NAME = "icon_128";
 
 
         public MainForm()
@@ -61,7 +58,7 @@ namespace VolumeBalancer
             // create a tray icon
             _trayIcon = new NotifyIcon();
             _trayIcon.Text = Application.ProductName;
-            SetTrayIcon(UserSettings.getTrayIcon());
+            SetTrayIcon(UserSettings.getTrayIconColor());
 
             // add tray menu to icon
             _trayIcon.ContextMenu = trayMenu;
@@ -75,6 +72,9 @@ namespace VolumeBalancer
 
             // pre-set the audio application drop down list
             UpdateDropDownListAudioApplications();
+
+            // set Color based on configuration
+            panelTrayIconColor.BackColor = UserSettings.getTrayIconColor();
 
             // set checkbox for balancing system sound
             checkBoxBalanceSystemSounds.Checked = UserSettings.getBalanceSystemSound();
@@ -108,32 +108,10 @@ namespace VolumeBalancer
         #region main functions
 
         // set tray icon
-        private void SetTrayIcon(string trayIconName)
+        private void SetTrayIcon(Color color)
         {
-            if (Properties.Resources.ResourceManager.GetObject(trayIconName) == null)
-                trayIconName = TRAYICON_BLUE;
-
-            _trayIcon.Icon = (Icon)Properties.Resources.ResourceManager.GetObject(trayIconName);
-
-            // select radio button
-            switch (trayIconName)
-            {
-                case TRAYICON_BLACK:
-                    radioButtonTrayIconColorBlack.Select();
-                    break;
-
-                case TRAYICON_GREY:
-                    radioButtonTrayIconColorGrey.Select();
-                    break;
-
-                case TRAYICON_WHITE:
-                    radioButtonTrayIconColorWhite.Select();
-                    break;
-
-                case TRAYICON_BLUE:
-                    radioButtonTrayIconColorBlue.Select();
-                    break;
-            }
+            _trayIcon.Icon = Helper.SetIconColor((Bitmap)Properties.Resources.ResourceManager.GetObject(TRAYICON_NAME), color);
+            
         }
 
 
@@ -982,50 +960,21 @@ namespace VolumeBalancer
             HotkeyInTextBoxPressed((TextBox)sender, e);
         }
 
-
-        private void radioButtonTrayIconColorBlack_CheckedChanged(object sender, EventArgs e)
+        private void panelTrayIconColor_MouseClick(object sender, MouseEventArgs e)
         {
-            RadioButton rb = (RadioButton)sender;
-            if (rb.Checked)
-            {
-                UserSettings.setTrayIcon(TRAYICON_BLACK);
-                SetTrayIcon(TRAYICON_BLACK);
-            }
+            ColorDialog colorDialog = new ColorDialog();
+
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+                ((Panel)sender).BackColor = colorDialog.Color;
         }
 
-
-        private void radioButtonTrayIconColorGrey_CheckedChanged(object sender, EventArgs e)
+        private void panelTrayIconColor_BackColorChanged(object sender, EventArgs e)
         {
-            RadioButton rb = (RadioButton)sender;
-            if (rb.Checked)
-            {
-                UserSettings.setTrayIcon(TRAYICON_GREY);
-                SetTrayIcon(TRAYICON_GREY);
-            }
+            Panel panelTemp = (Panel)sender;
+
+            UserSettings.setTrayIconColor(panelTemp.BackColor);
+            SetTrayIcon(panelTemp.BackColor);
         }
-
-
-        private void radioButtonTrayIconColorWhite_CheckedChanged(object sender, EventArgs e)
-        {
-            RadioButton rb = (RadioButton)sender;
-            if (rb.Checked)
-            {
-                UserSettings.setTrayIcon(TRAYICON_WHITE);
-                SetTrayIcon(TRAYICON_WHITE);
-            }
-        }
-
-
-        private void radioButtonTrayIconColorBlue_CheckedChanged(object sender, EventArgs e)
-        {
-            RadioButton rb = (RadioButton)sender;
-            if (rb.Checked)
-            {
-                UserSettings.setTrayIcon(TRAYICON_BLUE);
-                SetTrayIcon(TRAYICON_BLUE);
-            }
-        }
-
 
         private void checkBoxAutostart_CheckedChanged(object sender, EventArgs e)
         {

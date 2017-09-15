@@ -6,13 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Drawing;
 
 namespace VolumeBalancer
 {
     static class UserSettings
     {
         private static string _mainFocusApplication;
-        private static string _trayIcon;
+        private static Color _trayIconColor;
         private static bool _balanceSystemSound;
         private static Hotkey _hotkeyIncreaseFocusApplicationVolume;
         private static Hotkey _hotkeyIncreaseOtherApplicationVolume;
@@ -34,13 +35,13 @@ namespace VolumeBalancer
         }
 
 
-        public static string getTrayIcon()
+        public static Color getTrayIconColor()
         {
-            return _trayIcon;
+            return _trayIconColor;
         }
-        public static void setTrayIcon(string trayIcon)
+        public static void setTrayIconColor(Color trayIcon)
         {
-            _trayIcon = trayIcon;
+            _trayIconColor = trayIcon;
             Properties.Settings.Default.trayIcon = trayIcon;
             Properties.Settings.Default.Save();
         }
@@ -133,7 +134,7 @@ namespace VolumeBalancer
         public static void readSettings()
         {
             _mainFocusApplication = Properties.Settings.Default.mainFocusApplication;
-            _trayIcon = Properties.Settings.Default.trayIcon;
+            _trayIconColor = Properties.Settings.Default.trayIcon;
             _balanceSystemSound = Properties.Settings.Default.balanceSystemSound;
             _hotkeyIncreaseFocusApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseFocusApplicationVolume);
             _hotkeyIncreaseOtherApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseOtherApplicationVolume);

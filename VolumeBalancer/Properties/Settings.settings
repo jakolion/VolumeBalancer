@@ -23,8 +23,8 @@
     <Setting Name="hotkeyResetAllVolumes" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="trayIcon" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+    <Setting Name="trayIcon" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">Silver</Value>
     </Setting>
     <Setting Name="balanceSystemSound" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
