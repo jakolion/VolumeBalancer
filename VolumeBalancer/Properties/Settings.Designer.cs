@@ -130,5 +130,17 @@ namespace VolumeBalancer.Properties {
                 this["balanceSystemSound"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string customColors {
+            get {
+                return ((string)(this["customColors"]));
+            }
+            set {
+                this["customColors"] = value;
+            }
+        }
     }
 }

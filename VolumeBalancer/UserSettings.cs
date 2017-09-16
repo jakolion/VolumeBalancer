@@ -14,6 +14,7 @@ namespace VolumeBalancer
     {
         private static string _mainFocusApplication;
         private static Color _trayIconColor;
+        private static int[] _customColors;
         private static bool _balanceSystemSound;
         private static Hotkey _hotkeyIncreaseFocusApplicationVolume;
         private static Hotkey _hotkeyIncreaseOtherApplicationVolume;
@@ -43,6 +44,19 @@ namespace VolumeBalancer
         {
             _trayIconColor = trayIcon;
             Properties.Settings.Default.trayIcon = trayIcon;
+            Properties.Settings.Default.Save();
+        }
+
+
+        public static int[] getCustomColors()
+        {
+            return _customColors;
+        }
+        public static void setCustomColors(int[] customColors)
+        {
+            _customColors = customColors;
+            string converted = String.Join(",", _customColors.Select(i => i.ToString()).ToArray());
+            Properties.Settings.Default.customColors = converted;
             Properties.Settings.Default.Save();
         }
 
@@ -135,6 +149,24 @@ namespace VolumeBalancer
         {
             _mainFocusApplication = Properties.Settings.Default.mainFocusApplication;
             _trayIconColor = Properties.Settings.Default.trayIcon;
+
+            if (_customColors == null)
+                _customColors = new int[16];
+
+            string[] customColors = Properties.Settings.Default.customColors.Split(',');
+            if (customColors.Length != 16)
+            {
+                _customColors[0] = Helper.ColorToInt(SystemColors.Highlight);
+                _customColors[1] = Helper.ColorToInt(Color.Black);
+                for (int i = 2; i < _customColors.Length; i++)
+                    _customColors[i] = Helper.ColorToInt(Color.White);
+            }
+            else
+            {
+                for (int i = 0; i < _customColors.Length; i++)
+                    _customColors[i] = Int32.Parse(customColors[i]);
+            }
+
             _balanceSystemSound = Properties.Settings.Default.balanceSystemSound;
             _hotkeyIncreaseFocusApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseFocusApplicationVolume);
             _hotkeyIncreaseOtherApplicationVolume = StringToHotkey(Properties.Settings.Default.hotkeyIncreaseOtherApplicationVolume);

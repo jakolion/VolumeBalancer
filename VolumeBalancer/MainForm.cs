@@ -61,6 +61,7 @@ namespace VolumeBalancer
             // create a tray icon
             _trayIcon = new NotifyIcon();
             _trayIcon.Text = Application.ProductName;
+            SetTrayIcon(UserSettings.getTrayIconColor());
 
             // add tray menu to icon
             _trayIcon.ContextMenu = trayMenu;
@@ -972,19 +973,19 @@ namespace VolumeBalancer
 
         private void panelTrayIconColor_Click(object sender, EventArgs e)
         {
+            Panel panel = (Panel)sender;
             ColorDialog colorDialog = new ColorDialog();
+            colorDialog.FullOpen = true;
+            colorDialog.Color = panel.BackColor;
+            colorDialog.CustomColors = UserSettings.getCustomColors();
 
             if (colorDialog.ShowDialog() == DialogResult.OK)
-                ((Panel)sender).BackColor = colorDialog.Color;
-        }
-
-
-        private void panelTrayIconColor_BackColorChanged(object sender, EventArgs e)
-        {
-            Panel panelTemp = (Panel)sender;
-
-            UserSettings.setTrayIconColor(panelTemp.BackColor);
-            SetTrayIcon(panelTemp.BackColor);
+            {
+                SetTrayIcon(colorDialog.Color);
+                panel.BackColor = colorDialog.Color;
+                UserSettings.setTrayIconColor(panel.BackColor);
+                UserSettings.setCustomColors(colorDialog.CustomColors);
+            }
         }
 
 

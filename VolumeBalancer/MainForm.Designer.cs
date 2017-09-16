@@ -389,7 +389,6 @@
             this.panelTrayIconColor.Name = "panelTrayIconColor";
             this.panelTrayIconColor.Size = new System.Drawing.Size(13, 13);
             this.panelTrayIconColor.TabIndex = 4;
-            this.panelTrayIconColor.BackColorChanged += new System.EventHandler(this.panelTrayIconColor_BackColorChanged);
             this.panelTrayIconColor.Click += new System.EventHandler(this.panelTrayIconColor_Click);
             // 
             // groupBoxMisc
@@ -402,7 +401,7 @@
             this.groupBoxMisc.Margin = new System.Windows.Forms.Padding(3, 10, 3, 3);
             this.groupBoxMisc.Name = "groupBoxMisc";
             this.groupBoxMisc.Padding = new System.Windows.Forms.Padding(13);
-            this.groupBoxMisc.Size = new System.Drawing.Size(195, 118);
+            this.groupBoxMisc.Size = new System.Drawing.Size(195, 109);
             this.groupBoxMisc.TabIndex = 4;
             this.groupBoxMisc.TabStop = false;
             this.groupBoxMisc.Text = "Misc";
@@ -412,9 +411,9 @@
             this.labelTrayIconColor.AutoSize = true;
             this.labelTrayIconColor.Location = new System.Drawing.Point(32, 76);
             this.labelTrayIconColor.Name = "labelTrayIconColor";
-            this.labelTrayIconColor.Size = new System.Drawing.Size(78, 13);
+            this.labelTrayIconColor.Size = new System.Drawing.Size(79, 13);
             this.labelTrayIconColor.TabIndex = 7;
-            this.labelTrayIconColor.Text = "Tray Icon color";
+            this.labelTrayIconColor.Text = "Tray Icon Color";
             this.labelTrayIconColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.labelTrayIconColor.Click += new System.EventHandler(this.panelTrayIconColor_Click);
             // 

@@ -50,6 +50,15 @@ namespace VolumeBalancer
         }
 
 
+        // convert a color to int for custom colors
+        static public int ColorToInt(Color color)
+        {
+            // ToArgb() byte order:    AARRGGBB
+            // CustomColor byte order: RRGGBB00
+            return (color.R) | (color.G << 8) | (color.B << 16);
+        }
+
+
         // get path of process
         static public string GetProcessPath(uint processId)
         {
