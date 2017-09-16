@@ -60,10 +60,10 @@
             this.checkBoxBalanceSystemSounds = new System.Windows.Forms.CheckBox();
             this.panelTrayIconColor = new System.Windows.Forms.Panel();
             this.groupBoxMisc = new System.Windows.Forms.GroupBox();
-            this.labelTrayIconColor = new System.Windows.Forms.Label();
-            this.checkBoxAutostart = new System.Windows.Forms.CheckBox();
             this.labelFormIconColor = new System.Windows.Forms.Label();
+            this.labelTrayIconColor = new System.Windows.Forms.Label();
             this.panelFormIconColor = new System.Windows.Forms.Panel();
+            this.checkBoxAutostart = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarBalance)).BeginInit();
             this.groupBoxBalance.SuspendLayout();
             this.groupBoxHotkeys.SuspendLayout();
@@ -410,16 +410,36 @@
             this.groupBoxMisc.TabStop = false;
             this.groupBoxMisc.Text = "Misc";
             // 
+            // labelFormIconColor
+            // 
+            this.labelFormIconColor.AutoSize = true;
+            this.labelFormIconColor.Location = new System.Drawing.Point(32, 76);
+            this.labelFormIconColor.Name = "labelFormIconColor";
+            this.labelFormIconColor.Size = new System.Drawing.Size(97, 13);
+            this.labelFormIconColor.TabIndex = 3;
+            this.labelFormIconColor.Text = "Window Icon Color";
+            this.labelFormIconColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.labelFormIconColor.Click += new System.EventHandler(this.panelFormIconColor_Click);
+            // 
             // labelTrayIconColor
             // 
             this.labelTrayIconColor.AutoSize = true;
             this.labelTrayIconColor.Location = new System.Drawing.Point(32, 98);
             this.labelTrayIconColor.Name = "labelTrayIconColor";
             this.labelTrayIconColor.Size = new System.Drawing.Size(79, 13);
-            this.labelTrayIconColor.TabIndex = 7;
+            this.labelTrayIconColor.TabIndex = 5;
             this.labelTrayIconColor.Text = "Tray Icon Color";
             this.labelTrayIconColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.labelTrayIconColor.Click += new System.EventHandler(this.panelTrayIconColor_Click);
+            // 
+            // panelFormIconColor
+            // 
+            this.panelFormIconColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelFormIconColor.Location = new System.Drawing.Point(16, 76);
+            this.panelFormIconColor.Name = "panelFormIconColor";
+            this.panelFormIconColor.Size = new System.Drawing.Size(13, 13);
+            this.panelFormIconColor.TabIndex = 2;
+            this.panelFormIconColor.Click += new System.EventHandler(this.panelFormIconColor_Click);
             // 
             // checkBoxAutostart
             // 
@@ -431,26 +451,6 @@
             this.checkBoxAutostart.Text = "Autostart";
             this.checkBoxAutostart.UseVisualStyleBackColor = true;
             this.checkBoxAutostart.CheckedChanged += new System.EventHandler(this.checkBoxAutostart_CheckedChanged);
-            // 
-            // labelFormIconColor
-            // 
-            this.labelFormIconColor.AutoSize = true;
-            this.labelFormIconColor.Location = new System.Drawing.Point(32, 76);
-            this.labelFormIconColor.Name = "labelFormIconColor";
-            this.labelFormIconColor.Size = new System.Drawing.Size(97, 13);
-            this.labelFormIconColor.TabIndex = 9;
-            this.labelFormIconColor.Text = "Window Icon Color";
-            this.labelFormIconColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.labelFormIconColor.Click += new System.EventHandler(this.panelFormIconColor_Click);
-            // 
-            // panelFormIconColor
-            // 
-            this.panelFormIconColor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelFormIconColor.Location = new System.Drawing.Point(16, 76);
-            this.panelFormIconColor.Name = "panelFormIconColor";
-            this.panelFormIconColor.Size = new System.Drawing.Size(13, 13);
-            this.panelFormIconColor.TabIndex = 8;
-            this.panelFormIconColor.Click += new System.EventHandler(this.panelFormIconColor_Click);
             // 
             // MainForm
             // 
