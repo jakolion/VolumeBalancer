@@ -47,7 +47,7 @@ namespace VolumeBalancer
             Hide();
 
             // set form icon
-            SetFormIcon(SystemColors.Highlight);
+            SetFormIcon(UserSettings.getFormIconColor());
 
             // create a tray menu
             ContextMenu trayMenu = new ContextMenu();
@@ -76,7 +76,8 @@ namespace VolumeBalancer
             // pre-set the audio application drop down list
             UpdateDropDownListAudioApplications();
 
-            // set color of color panel based on user settings
+            // set color of color panels based on user settings
+            panelFormIconColor.BackColor = UserSettings.getFormIconColor();
             panelTrayIconColor.BackColor = UserSettings.getTrayIconColor();
 
             // set checkbox for balancing system sound
@@ -971,24 +972,6 @@ namespace VolumeBalancer
         }
 
 
-        private void panelTrayIconColor_Click(object sender, EventArgs e)
-        {
-            Panel panel = (Panel)sender;
-            ColorDialog colorDialog = new ColorDialog();
-            colorDialog.FullOpen = true;
-            colorDialog.Color = panel.BackColor;
-            colorDialog.CustomColors = UserSettings.getCustomColors();
-
-            if (colorDialog.ShowDialog() == DialogResult.OK)
-            {
-                SetTrayIcon(colorDialog.Color);
-                panel.BackColor = colorDialog.Color;
-                UserSettings.setTrayIconColor(panel.BackColor);
-                UserSettings.setCustomColors(colorDialog.CustomColors);
-            }
-        }
-
-
         private void checkBoxAutostart_CheckedChanged(object sender, EventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
@@ -1004,6 +987,40 @@ namespace VolumeBalancer
             CheckBox cb = (CheckBox)sender;
             UserSettings.setBalanceSystemSound(cb.Checked);
             UpdateApplicationList();
+        }
+
+
+        private void panelFormIconColor_Click(object sender, EventArgs e)
+        {
+            ColorDialog colorDialog = new ColorDialog();
+            colorDialog.FullOpen = true;
+            colorDialog.Color = panelFormIconColor.BackColor;
+            colorDialog.CustomColors = UserSettings.getCustomColors();
+
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                SetFormIcon(colorDialog.Color);
+                panelFormIconColor.BackColor = colorDialog.Color;
+                UserSettings.setFormIconColor(panelFormIconColor.BackColor);
+                UserSettings.setCustomColors(colorDialog.CustomColors);
+            }
+        }
+
+
+        private void panelTrayIconColor_Click(object sender, EventArgs e)
+        {
+            ColorDialog colorDialog = new ColorDialog();
+            colorDialog.FullOpen = true;
+            colorDialog.Color = panelTrayIconColor.BackColor;
+            colorDialog.CustomColors = UserSettings.getCustomColors();
+
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                SetTrayIcon(colorDialog.Color);
+                panelTrayIconColor.BackColor = colorDialog.Color;
+                UserSettings.setTrayIconColor(panelTrayIconColor.BackColor);
+                UserSettings.setCustomColors(colorDialog.CustomColors);
+            }
         }
 
 

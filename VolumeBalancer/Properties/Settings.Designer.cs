@@ -109,13 +109,12 @@ namespace VolumeBalancer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Highlight")]
-        public global::System.Drawing.Color trayIcon {
+        public global::System.Drawing.Color trayIconColor {
             get {
-                return ((global::System.Drawing.Color)(this["trayIcon"]));
+                return ((global::System.Drawing.Color)(this["trayIconColor"]));
             }
             set {
-                this["trayIcon"] = value;
+                this["trayIconColor"] = value;
             }
         }
         
@@ -140,6 +139,17 @@ namespace VolumeBalancer.Properties {
             }
             set {
                 this["customColors"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color formIconColor {
+            get {
+                return ((global::System.Drawing.Color)(this["formIconColor"]));
+            }
+            set {
+                this["formIconColor"] = value;
             }
         }
     }

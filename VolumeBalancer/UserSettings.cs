@@ -14,6 +14,7 @@ namespace VolumeBalancer
     {
         private static string _mainFocusApplication;
         private static Color _trayIconColor;
+        private static Color _formIconColor;
         private static int[] _customColors;
         private static bool _balanceSystemSound;
         private static Hotkey _hotkeyIncreaseFocusApplicationVolume;
@@ -22,6 +23,8 @@ namespace VolumeBalancer
         private static Hotkey _hotkeyActivateMainFocusApplication;
         private static Hotkey _hotkeyActivateTemporaryFocusApplication;
         private static Hotkey _hotkeyResetAllVolumes;
+
+        private static readonly Color DEFAULT_COLOR = Color.FromArgb(0, 128, 255);
 
 
         public static string getMainFocusApplication()
@@ -40,10 +43,22 @@ namespace VolumeBalancer
         {
             return _trayIconColor;
         }
-        public static void setTrayIconColor(Color trayIcon)
+        public static void setTrayIconColor(Color trayIconColor)
         {
-            _trayIconColor = trayIcon;
-            Properties.Settings.Default.trayIcon = trayIcon;
+            _trayIconColor = trayIconColor;
+            Properties.Settings.Default.trayIconColor = trayIconColor;
+            Properties.Settings.Default.Save();
+        }
+
+
+        public static Color getFormIconColor()
+        {
+            return _formIconColor;
+        }
+        public static void setFormIconColor(Color formIconColor)
+        {
+            _formIconColor = formIconColor;
+            Properties.Settings.Default.formIconColor = formIconColor;
             Properties.Settings.Default.Save();
         }
 
@@ -148,7 +163,13 @@ namespace VolumeBalancer
         public static void readSettings()
         {
             _mainFocusApplication = Properties.Settings.Default.mainFocusApplication;
-            _trayIconColor = Properties.Settings.Default.trayIcon;
+            _trayIconColor = Properties.Settings.Default.trayIconColor;
+            if (_trayIconColor.A == 0)
+                _trayIconColor = DEFAULT_COLOR;
+
+            _formIconColor = Properties.Settings.Default.formIconColor;
+            if (_formIconColor.A == 0)
+                _formIconColor = DEFAULT_COLOR;
 
             if (_customColors == null)
                 _customColors = new int[16];
@@ -156,7 +177,7 @@ namespace VolumeBalancer
             string[] customColors = Properties.Settings.Default.customColors.Split(',');
             if (customColors.Length != 16)
             {
-                _customColors[0] = Helper.ColorToInt(SystemColors.Highlight);
+                _customColors[0] = Helper.ColorToInt(DEFAULT_COLOR);
                 _customColors[1] = Helper.ColorToInt(Color.Black);
                 for (int i = 2; i < _customColors.Length; i++)
                     _customColors[i] = Helper.ColorToInt(Color.White);

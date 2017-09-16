@@ -23,13 +23,16 @@
     <Setting Name="hotkeyResetAllVolumes" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="trayIcon" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Highlight</Value>
+    <Setting Name="trayIconColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="balanceSystemSound" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="customColors" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="formIconColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>
