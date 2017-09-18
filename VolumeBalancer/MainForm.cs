@@ -176,54 +176,58 @@ namespace VolumeBalancer
             // clear the list
             _audioAppList.Clear();
 
-            // get current sessions
-            MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
-            MMDevice device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-            SessionCollection sessions = device.AudioSessionManager.Sessions;
-
-            // return if no sessions are available
-            if (sessions == null) return;
-
-            // loop through sessions
-            for (int i = 0; i < sessions.Count; i++)
+            try
             {
-                AudioSessionControl session = sessions[i];
-                // check if session is not expired and process exists
-                if (session.State != AudioSessionState.AudioSessionStateExpired && Helper.ProcessExists(session.GetProcessID))
+                // get current sessions
+                MMDeviceEnumerator deviceEnumerator = new MMDeviceEnumerator();
+                MMDevice device = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                SessionCollection sessions = device.AudioSessionManager.Sessions;
+
+                // return if no sessions are available
+                if (sessions == null) return;
+
+                // loop through sessions
+                for (int i = 0; i < sessions.Count; i++)
                 {
-                    if (session.IsSystemSoundsSession)
+                    AudioSessionControl session = sessions[i];
+                    // check if session is not expired and process exists
+                    if (session.State != AudioSessionState.AudioSessionStateExpired && Helper.ProcessExists(session.GetProcessID))
                     {
-                        if (UserSettings.getBalanceSystemSound())
-                            _audioAppList.Add(new AudioApp(session, "System Sound"));
-                    }
-                    else
-                    {
-                        // get full path of process if possible
-                        string applicationPath = Helper.GetProcessPath(session.GetProcessID);
-                        if (applicationPath == "")
-                            applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
+                        if (session.IsSystemSoundsSession)
+                        {
+                            if (UserSettings.getBalanceSystemSound())
+                                _audioAppList.Add(new AudioApp(session, "System Sound"));
+                        }
+                        else
+                        {
+                            // get full path of process if possible
+                            string applicationPath = Helper.GetProcessPath(session.GetProcessID);
+                            if (applicationPath == "")
+                                applicationPath = Process.GetProcessById((int)session.GetProcessID).ProcessName;
 
-                        // add new audio app to list if not already existing
-                        if (!AudioApplicationIsRunning(applicationPath))
-                            _audioAppList.Add(new AudioApp(session, applicationPath));
+                            // add new audio app to list if not already existing
+                            if (!AudioApplicationIsRunning(applicationPath))
+                                _audioAppList.Add(new AudioApp(session, applicationPath));
 
-                        // check if current focus application is running
-                        if (applicationPath == _currentFocusApplication)
-                            currentFocusApplicationIsRunning = true;
+                            // check if current focus application is running
+                            if (applicationPath == _currentFocusApplication)
+                                currentFocusApplicationIsRunning = true;
+                        }
+                        session.RegisterEventClient(this);
                     }
-                    session.RegisterEventClient(this);
                 }
+
+                // switch to main focus application if temporary focus application exits
+                if (_currentFocusApplication != UserSettings.getMainFocusApplication() && !currentFocusApplicationIsRunning)
+                    ActivateMainFocusApplication();
+
+                // update temp focus application text box
+                UpdateTempFocusApplicationTextBox();
+
+                // update balance slider
+                UpdateBalanceSlider();
             }
-
-            // switch to main focus application if temporary focus application exits
-            if (_currentFocusApplication != UserSettings.getMainFocusApplication() && !currentFocusApplicationIsRunning)
-                ActivateMainFocusApplication();
-
-            // update temp focus application text box
-            UpdateTempFocusApplicationTextBox();
-
-            // update balance slider
-            UpdateBalanceSlider();
+            catch { }
         }
 
 
